@@ -1,0 +1,712 @@
+================================================================================
+  AI FRAUD DETECTOR — COMPLETE SETUP & RUN GUIDE
+  13-Layer AI-Generated Image Fraud Detection System
+  HackyIndy 2026 Hackathon
+================================================================================
+
+Table of Contents:
+  1. SYSTEM REQUIREMENTS
+  2. PROJECT STRUCTURE
+  3. PREREQUISITES INSTALLATION
+  4. BACKEND SETUP (Python / FastAPI)
+  5. DOWNLOAD ML MODEL WEIGHTS
+  6. FRONTEND SETUP (Next.js / React)
+  7. ENVIRONMENT VARIABLES
+  8. RUNNING THE APPLICATION
+  9. TESTING THE APPLICATION
+  10. API ENDPOINTS REFERENCE
+  11. THE 13 DETECTION LAYERS EXPLAINED
+  12. GPU & PERFORMANCE NOTES
+  13. TROUBLESHOOTING
+  14. RESETTING / CLEANING UP
+
+
+================================================================================
+1. SYSTEM REQUIREMENTS
+================================================================================
+
+Minimum:
+  - OS:           Windows 10/11, macOS, or Linux
+  - CPU:          Any modern 4-core CPU
+  - RAM:          16 GB (32 GB recommended)
+  - Storage:      ~2 GB free (models + dependencies)
+  - GPU:          NVIDIA GPU with 6+ GB VRAM (for ML layers)
+                  Without GPU: works on CPU but ~5x slower
+
+Tested on:
+  - Windows 11
+  - NVIDIA GeForce RTX 4070 Ti SUPER (16 GB VRAM)
+  - 32 GB system RAM
+  - NVIDIA Driver 591.86, CUDA 12.1, Compute Capability 8.9
+
+Software:
+  - Python 3.12+       (tested: 3.12.10)
+  - Node.js 18+        (tested: 24.11.1)
+  - npm 9+             (tested: 11.6.2)
+  - Git                (for cloning)
+  - NVIDIA GPU drivers  (if using GPU acceleration)
+
+
+================================================================================
+2. PROJECT STRUCTURE
+================================================================================
+
+AI-deepfake/
+├── backend/                     # FastAPI backend (Python)
+│   ├── .env                     # Environment variables (YOUR API KEYS HERE)
+│   ├── .env.example             # Template for .env
+│   ├── requirements.txt         # Python dependencies
+│   ├── app/
+│   │   ├── main.py              # FastAPI app entry point
+│   │   ├── api/
+│   │   │   └── routes.py        # API endpoints (/analyze, /history, /stats)
+│   │   ├── core/
+│   │   │   ├── config.py        # Settings, thresholds, weights
+│   │   │   ├── models.py        # Pydantic models (LayerResult, etc.)
+│   │   │   └── model_manager.py # ML model loading, caching, GPU detection
+│   │   ├── db/
+│   │   │   └── database.py      # SQLite/SQLAlchemy async database
+│   │   ├── detectors/           # All 13 detection layers
+│   │   │   ├── exif_detector.py        # Layer 1:  EXIF metadata analysis
+│   │   │   ├── ela_detector.py         # Layer 2:  Error Level Analysis
+│   │   │   ├── hash_detector.py        # Layer 3:  Perceptual hash matching
+│   │   │   ├── ai_model_detector.py    # Layer 4:  FFT frequency analysis
+│   │   │   ├── c2pa_detector.py        # Layer 5:  C2PA provenance check
+│   │   │   ├── behavioral_detector.py  # Layer 6:  User behavior analysis
+│   │   │   ├── gemini_detector.py      # Layer 7:  Gemini AI reasoning
+│   │   │   ├── noise_detector.py       # Layer 8:  PRNU / noise fingerprint
+│   │   │   ├── clip_detector.py        # Layer 9:  CLIP ViT-L/14 AI detect
+│   │   │   ├── cnn_detector.py         # Layer 10: CNN ResNet-50 detector
+│   │   │   ├── watermark_detector.py   # Layer 11: Invisible watermark decode
+│   │   │   ├── trufor_detector.py      # Layer 12: TruFor forgery localization
+│   │   │   └── dire_detector.py        # Layer 13: DIRE reconstruction (opt.)
+│   │   └── engine/
+│   │       ├── pipeline.py      # Orchestrates all 13 layers in parallel
+│   │       └── scoring.py       # Weighted ensemble scoring engine
+│   ├── models/                  # Downloaded ML model weights (gitignored)
+│   │   ├── clip_universalfakedetect/
+│   │   │   └── fc_weights.pth   # CLIP linear probe (~4 KB)
+│   │   ├── cnndetection/
+│   │   │   └── blur_jpg_prob0.5.pth  # CNNDetection ResNet-50 (~282 MB)
+│   │   ├── trufor/              # (optional manual download)
+│   │   └── dire/                # (optional manual download)
+│   └── uploads/                 # Uploaded images (auto-created)
+│
+├── frontend/                    # Next.js 14 frontend (React/TypeScript)
+│   ├── package.json             # Node dependencies
+│   ├── next.config.js           # Next.js config (API proxy to :8000)
+│   ├── tailwind.config.js       # Tailwind CSS config
+│   ├── app/
+│   │   ├── layout.tsx           # Root layout
+│   │   ├── page.tsx             # Main page (upload + results UI)
+│   │   └── globals.css          # Global styles
+│   ├── components/
+│   │   └── LayerCard.tsx        # Layer result display card
+│   └── lib/
+│       ├── api.ts               # API client (fetch wrapper)
+│       └── utils.ts             # Utility functions, layer labels/icons
+│
+├── download_models.py           # Script to download ML model weights
+├── test_api.py                  # Quick API test script
+├── reset_db.py                  # Database reset utility
+├── fraud_detector.db            # SQLite database (auto-created)
+└── README.md
+
+
+================================================================================
+3. PREREQUISITES INSTALLATION
+================================================================================
+
+--- 3a. Install Python 3.12 ---
+
+  Download from: https://www.python.org/downloads/
+  IMPORTANT: Check "Add Python to PATH" during installation.
+
+  Verify:
+    python --version
+    # Should show: Python 3.12.x
+
+--- 3b. Install Node.js ---
+
+  Download from: https://nodejs.org/ (LTS version)
+
+  Verify:
+    node --version
+    npm --version
+
+--- 3c. Install NVIDIA GPU Drivers (for GPU acceleration) ---
+
+  If you have an NVIDIA GPU:
+    1. Download latest drivers from: https://www.nvidia.com/drivers
+    2. Install and restart
+    3. Verify:
+         nvidia-smi
+       Should show your GPU name and driver version.
+
+  If you DON'T have an NVIDIA GPU:
+    - The system will automatically fall back to CPU mode.
+    - ML layers will be slower (~5x) but still functional.
+
+--- 3d. Install Git ---
+
+  Download from: https://git-scm.com/downloads
+
+
+================================================================================
+4. BACKEND SETUP (Python / FastAPI)
+================================================================================
+
+Step 1: Open a terminal (PowerShell on Windows, Terminal on Mac/Linux)
+
+Step 2: Navigate to the project root
+    cd C:\Users\g18g1\AI-deepfake
+    (or wherever you cloned/extracted the project)
+
+Step 3: Create Python virtual environment
+    python -m venv .venv
+
+Step 4: Activate the virtual environment
+
+    Windows (PowerShell):
+        .venv\Scripts\Activate.ps1
+
+    Windows (CMD):
+        .venv\Scripts\activate.bat
+
+    macOS / Linux:
+        source .venv/bin/activate
+
+    You should see (.venv) in your terminal prompt.
+
+Step 5: Install PyTorch with CUDA support
+
+    If you have an NVIDIA GPU:
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+    If CPU only:
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+Step 6: Install all other Python dependencies
+    cd backend
+    pip install -r requirements.txt
+
+    This installs:
+      - FastAPI, Uvicorn (web server)
+      - Pillow, pillow-heif (image processing, HEIC support)
+      - numpy, scipy, opencv-python-headless (signal processing)
+      - google-generativeai (Gemini AI)
+      - open-clip-torch, timm (CLIP model)
+      - invisible-watermark (watermark decoder)
+      - PyWavelets (wavelet transforms)
+      - SQLAlchemy, aiosqlite (database)
+      - And more...
+
+Step 7: Verify installation
+    python -c "import torch; print('PyTorch:', torch.__version__); print('CUDA:', torch.cuda.is_available()); print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'None')"
+
+    Expected output (with GPU):
+      PyTorch: 2.5.1+cu121
+      CUDA: True
+      GPU: NVIDIA GeForce RTX 4070 Ti SUPER
+
+Step 8: Set up environment variables (see Section 7 below)
+
+
+================================================================================
+5. DOWNLOAD ML MODEL WEIGHTS
+================================================================================
+
+The ML detection layers (CLIP, CNN) need pre-trained model weights.
+A download script is provided.
+
+Step 1: From the project root (with venv activated):
+    cd C:\Users\g18g1\AI-deepfake
+    python download_models.py
+
+    This will download:
+      - CLIP probe weights: ~4 KB
+        Source: WisconsinAIVision/UniversalFakeDetect
+      - CNNDetection ResNet-50 weights: ~282 MB
+        Source: PeterWang512/CNNDetection (Dropbox)
+
+    Files are saved to: backend/models/
+
+Step 2: Verify downloads
+    The script will print [OK] for each successful download.
+    If a download fails, follow the manual instructions printed.
+
+Step 3 (OPTIONAL — skip unless you need them):
+    - TruFor weights: Download from https://github.com/grip-unina/TruFor/releases
+      Save to: backend/models/trufor/trufor_weights.pth
+      (Works without weights using built-in heuristic mode)
+
+    - DIRE weights: Download from https://github.com/ZhendongWang6/DIRE/releases
+      Save to: backend/models/dire/dire_classifier.pth
+      (DIRE is disabled by default — set ENABLE_DIRE=true in .env to use)
+
+NOTE: The CLIP ViT-L/14 backbone model (~900 MB) is downloaded automatically
+by the open_clip library on first analysis. It's cached in:
+  Windows: C:\Users\<you>\.cache\huggingface\
+  macOS:   ~/.cache/huggingface/
+  Linux:   ~/.cache/huggingface/
+
+
+================================================================================
+6. FRONTEND SETUP (Next.js / React)
+================================================================================
+
+Step 1: Open a NEW terminal (keep the backend terminal separate)
+
+Step 2: Navigate to the frontend directory
+    cd C:\Users\g18g1\AI-deepfake\frontend
+
+Step 3: Install Node.js dependencies
+    npm install
+
+    This installs: Next.js 14, React 18, Tailwind CSS, Recharts,
+    react-dropzone, lucide-react icons, and dev dependencies.
+
+Step 4: Verify
+    npm run build
+
+    Should complete without errors.
+
+NOTE: The frontend proxies API calls to the backend via next.config.js
+      /api/* -> http://localhost:8000/api/*
+      No extra CORS config needed.
+
+
+================================================================================
+7. ENVIRONMENT VARIABLES
+================================================================================
+
+The backend needs a Gemini API key for Layer 7 (AI reasoning).
+
+Step 1: Get a free Gemini API key
+    Go to: https://aistudio.google.com/app/apikey
+    Sign in with Google and create a new API key.
+
+Step 2: Configure backend .env
+
+    Create/edit: backend/.env
+
+    Contents:
+    ─────────────────────────────────
+    # Gemini API Key (REQUIRED for Layer 7)
+    GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+    GEMINI_MODEL=gemini-2.5-flash
+
+    # Debug mode (shows detailed logs)
+    DEBUG=true
+
+    # Database (auto-created)
+    DATABASE_URL=sqlite+aiosqlite:///./fraud_detector.db
+
+    # Optional: Enable DIRE layer (needs weights download)
+    # ENABLE_DIRE=true
+    ─────────────────────────────────
+
+    Replace YOUR_GEMINI_API_KEY_HERE with your actual key.
+
+    A template is provided at backend/.env.example
+
+NOTE: All 12 other layers work WITHOUT any API key. Only Gemini requires one.
+If you skip the key, the other 12 layers still function — Gemini will just
+return an error result with confidence 0.
+
+
+================================================================================
+8. RUNNING THE APPLICATION
+================================================================================
+
+You need TWO terminals open — one for backend, one for frontend.
+
+--- Terminal 1: Backend ---
+
+    cd C:\Users\g18g1\AI-deepfake
+    .venv\Scripts\Activate.ps1               # Activate virtualenv (Windows)
+    # source .venv/bin/activate               # (macOS/Linux)
+
+    python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --app-dir backend
+
+    You should see:
+      INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+      INFO:     Started reloader process [...]
+
+    The --reload flag enables hot-reloading (auto-restarts on code changes).
+
+    API docs available at: http://localhost:8000/docs (Swagger UI)
+    Alternative docs:      http://localhost:8000/redoc
+
+--- Terminal 2: Frontend ---
+
+    cd C:\Users\g18g1\AI-deepfake\frontend
+    npm run dev
+
+    You should see:
+      ▲ Next.js 14.2.15
+      - Local: http://localhost:3000
+      ✓ Ready in ~1.5s
+
+    If port 3000 is busy, Next.js auto-picks 3001. Both are allowed by CORS.
+
+--- Open the Application ---
+
+    Open your browser and go to:
+        http://localhost:3000
+
+    You should see the AI Fraud Detector UI with an image upload area.
+
+
+================================================================================
+9. TESTING THE APPLICATION
+================================================================================
+
+--- 9a. Using the Web UI ---
+
+    1. Open http://localhost:3000 in your browser
+    2. Drag & drop an image into the upload zone OR click to browse
+    3. Supported formats: JPEG, PNG, WebP, HEIC, TIFF, BMP, GIF
+    4. Max file size: 20 MB
+    5. Wait for analysis (first run: ~2 min for model loading;
+       subsequent: ~10-15 seconds)
+    6. Results show:
+       - Overall risk score (0.00 – 1.00) and tier (LOW / MEDIUM / HIGH)
+       - Individual scores for all 13 detection layers
+       - ELA heatmap (Error Level Analysis visualization)
+       - TruFor manipulation heatmap (forgery localization)
+       - Gemini AI reasoning text
+       - Flags and details for each layer
+
+--- 9b. Using the API Directly (test_api.py) ---
+
+    Place a test image at: C:\Users\g18g1\AI-deepfake\test_image.jpg
+    Then run:
+        cd C:\Users\g18g1\AI-deepfake
+        .venv\Scripts\python.exe test_api.py
+
+    Output shows all 13 layer scores, flags, and timing.
+
+--- 9c. Using cURL / PowerShell ---
+
+    # Simple analysis
+    Invoke-RestMethod -Uri "http://localhost:8000/api/v1/analyze" `
+        -Method Post -InFile "test_image.jpg" `
+        -ContentType "multipart/form-data"
+
+    # With context (account_id, location, etc.)
+    # Use the Swagger UI at http://localhost:8000/docs for full parameter list
+
+--- 9d. First-Run Expectations ---
+
+    FIRST ANALYSIS will be slow (~1-3 minutes) because:
+      1. CLIP ViT-L/14 backbone downloads (~900 MB, one-time)
+      2. All ML models load into GPU/CPU memory
+      3. Database initializes
+
+    SUBSEQUENT ANALYSES are fast (~10-15 seconds) because:
+      - Models are cached in memory
+      - CLIP backbone is cached on disk
+
+--- 9e. Expected Results for a REAL Photo ---
+
+    A genuine camera photo should score:
+      risk_score: 0.05 – 0.30 (LOW tier)
+      CLIP: LOW (< 0.35)
+      CNN:  LOW (< 0.15)
+      EXIF: LOW (has camera metadata)
+      ELA:  MODERATE (some compression artifacts normal)
+
+--- 9f. Expected Results for an AI-GENERATED Image ---
+
+    An AI-generated image should score:
+      risk_score: 0.50 – 0.95 (MEDIUM to HIGH tier)
+      CLIP: HIGH (> 0.65)
+      CNN:  HIGH (> 0.60)
+      EXIF: HIGH (no camera metadata)
+      ELA:  HIGH (uniform error levels)
+      Watermark: HIGH (if SD watermark found)
+
+
+================================================================================
+10. API ENDPOINTS REFERENCE
+================================================================================
+
+Base URL: http://localhost:8000/api/v1
+
+--- POST /api/v1/analyze ---
+  Upload an image for fraud detection.
+
+  Content-Type: multipart/form-data
+  Parameters:
+    file (required)           — The image file to analyze
+    account_id (optional)     — User account ID (for behavioral analysis)
+    device_fingerprint (opt)  — Device fingerprint string
+    delivery_lat (optional)   — Delivery latitude (GPS coordinate)
+    delivery_lon (optional)   — Delivery longitude (GPS coordinate)
+    order_value (optional)    — Order value in dollars
+    claim_description (opt)   — Text description of the claim
+
+  Returns: JSON AnalysisResponse with:
+    - id, filename
+    - risk_score (0.0 – 1.0)
+    - risk_tier ("low", "medium", "high")
+    - layer_results[] (13 items, each with layer, score, confidence, flags)
+    - ela_heatmap_b64 (base64 PNG string)
+    - trufor_heatmap_b64 (base64 PNG string, if available)
+    - gemini_reasoning (text)
+    - processing_time_ms
+    - hash_matches[]
+    - created_at
+
+--- GET /api/v1/history ---
+  Get past analysis results (newest first).
+  Query params: limit (default 50), offset (default 0)
+
+--- GET /api/v1/analysis/{claim_id} ---
+  Get detailed result for a specific analysis by ID.
+
+--- GET /api/v1/stats ---
+  Aggregate statistics: total scans, flagged count, avg score, layer triggers.
+
+--- GET /api/v1/health ---
+  Health check. Returns: {"status": "ok", "service": "AI Fraud Detector"}
+
+--- Interactive API Docs ---
+  Swagger UI:  http://localhost:8000/docs
+  ReDoc:       http://localhost:8000/redoc
+
+
+================================================================================
+11. THE 13 DETECTION LAYERS EXPLAINED
+================================================================================
+
+Layer  Name              Weight   What It Does
+─────  ────────────────  ──────   ────────────────────────────────────────
+  1    EXIF Metadata     0.05     Checks camera make/model, GPS, timestamps.
+                                  AI images have NO EXIF. Stripped EXIF = sus.
+
+  2    ELA (Error Level) 0.08     Re-compresses image and compares error
+                                  levels. AI images have eerily uniform ELA.
+
+  3    Hash Matching     0.12     Perceptual hashing (aHash, pHash, dHash,
+                                  wHash) to find duplicate/near-dup images
+                                  in the database. Catches serial fraudsters.
+
+  4    FFT Frequency     0.07     Fourier Transform of the image. GAN/diffusion
+                                  models leave spectral artifacts invisible
+                                  to the eye but visible in frequency domain.
+
+  5    C2PA Provenance   0.03     Checks for Content Authenticity Initiative
+                                  signatures. Adobe/camera C2PA proves origin.
+
+  6    Behavioral        0.10     Analyzes user patterns: claim frequency,
+                                  account age, device fingerprint, GPS vs
+                                  claimed location. Catches repeat offenders.
+
+  7    Gemini AI         0.07     Google Gemini 2.5 Flash analyzes the image
+                                  for physical plausibility, contextual
+                                  consistency, lighting, and manipulation.
+
+  8    Noise / PRNU      0.05     Extracts camera sensor noise fingerprint
+                                  using wavelet denoising. Real cameras have
+                                  unique PRNU patterns; AI doesn't. Computes
+                                  PCE (Peak-to-Correlation Energy) and
+                                  spectrum flatness.
+
+  9    CLIP AI Detect    0.18     CLIP ViT-L/14 extracts visual features,
+                                  then a trained linear probe classifies
+                                  real vs AI-generated. Highest-weighted
+                                  layer. Based on UniversalFakeDetect paper.
+
+ 10    CNN Fingerprint   0.10     ResNet-50 fine-tuned on ProGAN with
+                                  blur+JPEG augmentation. Generalizes well
+                                  to other generators (~90% cross-gen accuracy).
+                                  From Wang et al. CVPR 2020.
+
+ 11    Invisible WM      0.03     Decodes steganographic watermarks embedded
+                                  by Stable Diffusion (DwtDctSvd 136-bit)
+                                  and RivaGAN (32-bit). If found = AI image.
+
+ 12    TruFor Localize   0.07     Two-stream network (RGB + noise) for
+                                  forgery detection & localization. Outputs
+                                  a manipulation heatmap showing WHERE
+                                  manipulation occurred.
+
+ 13    DIRE Reconstruct  0.05     Diffusion Reconstruction Error — feeds
+                                  image through an autoencoder and measures
+                                  reconstruction difference. AI images
+                                  reconstruct differently. DISABLED by default.
+
+  TOTAL WEIGHTS:         1.00
+
+  Scoring: Weighted sum of (layer_score * layer_confidence * weight).
+  Risk Tiers: LOW < 0.30 < MEDIUM < 0.60 < HIGH
+
+
+================================================================================
+12. GPU & PERFORMANCE NOTES
+================================================================================
+
+--- GPU Memory Usage ---
+  After loading all models: ~6 GB VRAM
+  During inference:         ~7-8 GB VRAM peak
+  Your RTX 4070 Ti SUPER (16 GB) has plenty of headroom.
+
+  Check live GPU usage:
+    nvidia-smi
+
+--- Performance Benchmarks ---
+  First request (cold start — all models loading):
+    ~2-3 minutes (includes CLIP backbone download first time)
+
+  Subsequent requests (models cached in memory):
+    ~10-15 seconds per image
+
+  Breakdown by layer (approximate):
+    Layers 1-8 (non-ML):   < 2 seconds combined
+    Layer 9 (CLIP):         ~3-4 seconds
+    Layer 10 (CNN):         ~1 second
+    Layer 7 (Gemini API):   ~3-5 seconds (network latency)
+    Layer 12 (TruFor):      ~2 seconds
+    All layers run in parallel (asyncio.gather).
+
+--- CPU-Only Mode ---
+  If no NVIDIA GPU is detected, all ML layers automatically use CPU.
+  Expect ~30-60 seconds per analysis instead of ~10s.
+
+--- Reducing Memory Usage ---
+  If you're low on VRAM:
+    1. Models use float16 on GPU by default (torch.amp.autocast)
+    2. Keep ENABLE_DIRE=false (saves ~200 MB VRAM)
+    3. The system gracefully handles missing weights (falls back to heuristics)
+
+
+================================================================================
+13. TROUBLESHOOTING
+================================================================================
+
+PROBLEM: "ModuleNotFoundError: No module named 'app'"
+  CAUSE:  Running uvicorn from wrong directory.
+  FIX:    Use --app-dir flag:
+          python -m uvicorn app.main:app --app-dir backend
+
+PROBLEM: "CUDA not available" / torch.cuda.is_available() = False
+  CAUSE:  Wrong PyTorch version installed (CPU-only).
+  FIX:    Reinstall with CUDA support:
+          pip uninstall torch torchvision
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+PROBLEM: "Port 8000 already in use"
+  FIX:    Kill the existing process:
+          Windows:  netstat -ano | findstr :8000
+                    taskkill /PID <pid> /F
+          Or use a different port:
+          python -m uvicorn app.main:app --port 8001 --app-dir backend
+
+PROBLEM: "Port 3000 already in use"
+  INFO:   Next.js auto-picks the next available port (3001, 3002, etc.)
+  NOTE:   Backend CORS allows all origins ("*"), so any port works.
+
+PROBLEM: Frontend shows "Failed to fetch" or CORS error
+  CAUSE:  Backend not running, or on a different port.
+  FIX:    1. Ensure backend is running on port 8000
+          2. Check http://localhost:8000/docs to confirm
+          3. Frontend proxies /api/* to localhost:8000 via next.config.js
+
+PROBLEM: "CNNDetection weights not found" warning in logs
+  CAUSE:  Model weights not downloaded.
+  FIX:    Run:  python download_models.py
+
+PROBLEM: "image too small, should be larger than 256x256" (watermark layer)
+  INFO:   This is normal for small images. The watermark decoder needs
+          at least 256x256 pixels. Small test images will show
+          "DwtDctSvd decode unavailable" — not a bug.
+
+PROBLEM: Gemini layer returns error / score 0
+  CAUSE:  Missing or invalid GEMINI_API_KEY in backend/.env
+  FIX:    Get a key from https://aistudio.google.com/app/apikey
+
+PROBLEM: First analysis takes forever (> 5 minutes)
+  CAUSE:  CLIP ViT-L/14 backbone downloading (~900 MB, one-time).
+  FIX:    Wait for it. Check network activity. Subsequent runs are fast.
+
+PROBLEM: pip install fails on "invisible-watermark"
+  FIX:    pip install invisible-watermark
+          If that fails: pip install opencv-python-headless numpy
+          Then retry.
+
+PROBLEM: HEIC images not recognized
+  CAUSE:  pillow-heif not installed or not registered.
+  FIX:    pip install pillow-heif
+          The app auto-registers it on startup (see main.py).
+
+PROBLEM: "PermissionError" when writing to uploads/
+  FIX:    Create the directory manually:
+          mkdir backend\uploads
+
+PROBLEM: Database is corrupted
+  FIX:    Delete and let it recreate:
+          python reset_db.py
+          (Or just delete fraud_detector.db, it auto-recreates on startup)
+
+
+================================================================================
+14. RESETTING / CLEANING UP
+================================================================================
+
+--- Reset Database ---
+    python reset_db.py
+    # Or manually:
+    del fraud_detector.db
+    # It auto-recreates on next backend start.
+
+--- Clear Uploaded Images ---
+    Remove-Item backend\uploads\* -Force
+    # Or on Linux: rm -rf backend/uploads/*
+
+--- Clear Model Cache (re-download models) ---
+    Remove-Item backend\models\clip_universalfakedetect\* -Force
+    Remove-Item backend\models\cnndetection\* -Force
+    python download_models.py
+
+--- Clear CLIP Backbone Cache (huggingface) ---
+    Windows:  Remove-Item $env:USERPROFILE\.cache\huggingface\hub\* -Recurse
+    Linux:    rm -rf ~/.cache/huggingface/hub/
+
+--- Full Clean Reinstall ---
+    1. Delete .venv:           Remove-Item .venv -Recurse -Force
+    2. Delete node_modules:    Remove-Item frontend\node_modules -Recurse -Force
+    3. Delete database:        del fraud_detector.db
+    4. Follow setup from Section 4 again.
+
+
+================================================================================
+  QUICK START CHEAT SHEET (TL;DR)
+================================================================================
+
+  # ONE-TIME SETUP:
+  python -m venv .venv
+  .venv\Scripts\Activate.ps1
+  pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+  cd backend && pip install -r requirements.txt && cd ..
+  python download_models.py
+  cd frontend && npm install && cd ..
+  # Edit backend/.env → add your GEMINI_API_KEY
+
+  # EVERY TIME YOU WANT TO RUN:
+  # Terminal 1 (Backend):
+  cd C:\Users\g18g1\AI-deepfake
+  .venv\Scripts\Activate.ps1
+  python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --app-dir backend
+
+  # Terminal 2 (Frontend):
+  cd C:\Users\g18g1\AI-deepfake\frontend
+  npm run dev
+
+  # Open browser → http://localhost:3000
+  # Upload image → wait ~10s → see 13-layer results!
+
+================================================================================
+  END OF GUIDE
+================================================================================

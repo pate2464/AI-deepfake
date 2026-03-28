@@ -53,7 +53,7 @@ export default function Home() {
           🛡️ AI Fraud Detector
         </h1>
         <p className="text-[#a0a0a0] mt-2">
-          8-layer deep analysis pipeline for detecting AI-generated fraudulent
+          21-layer deep analysis pipeline for detecting AI-generated fraudulent
           images
         </p>
       </div>
@@ -173,6 +173,9 @@ export default function Home() {
                   elaHeatmap={
                     lr.layer === "ela" ? result.ela_heatmap_b64 ?? undefined : undefined
                   }
+                  truforHeatmap={
+                    lr.layer === "trufor" ? result.trufor_heatmap_b64 ?? undefined : undefined
+                  }
                   geminiReasoning={
                     lr.layer === "gemini"
                       ? result.gemini_reasoning ?? undefined
@@ -189,8 +192,8 @@ export default function Home() {
       <footer className="mt-12 text-center text-xs text-[#666] pb-8">
         <p>HackyIndy 2026 — AI Fraud Detection Pipeline</p>
         <p className="mt-1">
-          8 layers: EXIF · ELA · Perceptual Hashing · FFT/AI Detection · C2PA ·
-          Behavioral · Gemini Vision · Noise/PRNU
+          19 layers: EXIF · ELA · Hashing · FFT · C2PA · Behavioral · Vision AI ·
+          PRNU · CLIP · CNN · Watermark · TruFor · DIRE · Gradient · LSB · DCT · GAN · Attention · Texture
         </p>
       </footer>
     </main>

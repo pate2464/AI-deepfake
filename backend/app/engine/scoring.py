@@ -20,6 +20,19 @@ WEIGHTS: dict[LayerName, str] = {
     LayerName.BEHAVIORAL: "WEIGHT_BEHAVIORAL",
     LayerName.GEMINI: "WEIGHT_GEMINI",
     LayerName.NOISE: "WEIGHT_NOISE",
+    LayerName.CLIP_DETECT: "WEIGHT_CLIP_DETECT",
+    LayerName.CNN_DETECT: "WEIGHT_CNN_DETECT",
+    LayerName.WATERMARK: "WEIGHT_WATERMARK",
+    LayerName.TRUFOR: "WEIGHT_TRUFOR",
+    LayerName.DIRE: "WEIGHT_DIRE",
+    LayerName.GRADIENT: "WEIGHT_GRADIENT",
+    LayerName.LSB: "WEIGHT_LSB",
+    LayerName.DCT_HIST: "WEIGHT_DCT_HIST",
+    LayerName.GAN_FINGERPRINT: "WEIGHT_GAN_FINGERPRINT",
+    LayerName.ATTENTION_PATTERN: "WEIGHT_ATTENTION_PATTERN",
+    LayerName.TEXTURE: "WEIGHT_TEXTURE",
+    LayerName.NPR: "WEIGHT_NPR",
+    LayerName.MLEP: "WEIGHT_MLEP",
 }
 
 
@@ -69,6 +82,34 @@ def compute_risk_score(
         risk_score = 0.5  # Fallback
 
     risk_score = round(min(1.0, max(0.0, risk_score)), 4)
+
+    # ── Consensus boost ────────────────────────────────
+    # When multiple independent AI-detection layers agree that the
+    # image is suspicious, their consensus should override "blind"
+    # layers (e.g. GAN-specific detectors that can't see diffusion
+    # artifacts).  This prevents confident false-negatives from
+    # drowning out confident true-positives in the weighted average.
+    _AI_DETECTION_LAYERS = {
+        LayerName.GEMINI,       # VLM semantic analysis
+        LayerName.TRUFOR,       # Learned manipulation detector
+        LayerName.CLIP_DETECT,  # CLIP-based AI classifier
+        LayerName.ATTENTION_PATTERN,  # Patch self-similarity
+        LayerName.EXIF,         # Metadata / format signals
+        LayerName.NPR,          # Neighboring pixel residuals
+    }
+    ai_signals = [
+        lr for lr in layer_results
+        if lr.layer in _AI_DETECTION_LAYERS
+        and lr.score >= 0.5 and lr.confidence >= 0.5
+        and not lr.error
+    ]
+    if len(ai_signals) >= 3:
+        # Strong consensus (3+ independent detectors agree) — use their
+        # confidence-weighted average as a floor for the risk score.
+        s_sum = sum(s.score * s.confidence for s in ai_signals)
+        c_sum = sum(s.confidence for s in ai_signals)
+        consensus = s_sum / c_sum
+        risk_score = max(risk_score, round(consensus, 4))
 
     # ── Determine tier ─────────────────────────────────
     if risk_score >= settings.RISK_HIGH_THRESHOLD:

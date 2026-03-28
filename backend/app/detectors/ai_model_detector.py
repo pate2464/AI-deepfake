@@ -107,6 +107,78 @@ def _compute_dct_features(img_array: np.ndarray) -> dict[str, float]:
     return {"dct_ac_dc_mean": 0.0, "dct_ac_dc_std": 0.0}
 
 
+def _compute_power_law_features(img_array: np.ndarray) -> dict[str, float]:
+    """Compute 1/f^β power-law spectral features (Doloriel et al., arXiv:2512.08042).
+
+    Natural images follow a 1/f^β power spectral density with β ≈ 1.8–2.2.
+    AI-generated images deviate from this — often β < 1.5 or > 2.5, and the
+    residual energy from the power-law fit is higher.
+    """
+    f_transform = np.fft.fft2(img_array)
+    f_shift = np.fft.fftshift(f_transform)
+    power = np.abs(f_shift) ** 2
+
+    h, w = img_array.shape
+    cy, cx = h // 2, w // 2
+    Y, X = np.ogrid[:h, :w]
+    dist = np.sqrt((X - cx) ** 2 + (Y - cy) ** 2)
+
+    max_radius = min(cy, cx)
+
+    # Radial PSD in log-spaced bins (avoid DC component)
+    n_bins = 30
+    bin_edges = np.logspace(np.log10(2), np.log10(max_radius), n_bins + 1)
+    radial_freq = []
+    radial_psd = []
+
+    for k in range(n_bins):
+        mask = (dist >= bin_edges[k]) & (dist < bin_edges[k + 1])
+        if np.sum(mask) > 0:
+            mean_psd = float(np.mean(power[mask]))
+            if mean_psd > 0:
+                radial_freq.append((bin_edges[k] + bin_edges[k + 1]) / 2.0)
+                radial_psd.append(mean_psd)
+
+    if len(radial_freq) < 5:
+        return {
+            "beta_exponent": 0.0,
+            "beta_deviation": 2.0,
+            "power_law_residual": 1.0,
+            "n_spectral_bumps": 0,
+        }
+
+    log_freq = np.log10(np.array(radial_freq))
+    log_psd = np.log10(np.array(radial_psd))
+
+    # Linear fit: log(PSD) = -β * log(freq) + c
+    coeffs = np.polyfit(log_freq, log_psd, 1)
+    beta_exponent = -coeffs[0]  # Negate because slope is negative for 1/f^β
+
+    # Deviation from natural β ≈ 2.0
+    beta_deviation = abs(beta_exponent - 2.0)
+
+    # Residual energy from fit (how well it follows power law)
+    fitted = np.polyval(coeffs, log_freq)
+    residuals = log_psd - fitted
+    residual_energy = float(np.mean(residuals ** 2))
+
+    # Count spectral "bumps" — local maxima in residuals that exceed 1 std
+    # AI images often have characteristic bumps at specific frequencies
+    res_std = np.std(residuals)
+    n_bumps = 0
+    for i in range(1, len(residuals) - 1):
+        if residuals[i] > residuals[i - 1] and residuals[i] > residuals[i + 1]:
+            if residuals[i] > res_std:
+                n_bumps += 1
+
+    return {
+        "beta_exponent": float(beta_exponent),
+        "beta_deviation": float(beta_deviation),
+        "power_law_residual": float(residual_energy),
+        "n_spectral_bumps": n_bumps,
+    }
+
+
 def analyze(image_path: str) -> LayerResult:
     """Run frequency-domain AI detection analysis."""
     flags: list[str] = []
@@ -136,6 +208,10 @@ def analyze(image_path: str) -> LayerResult:
     # DCT analysis
     dct_feats = _compute_dct_features(img_arr)
     details["dct"] = dct_feats
+
+    # Power-law 1/f^β analysis
+    power_law_feats = _compute_power_law_features(img_arr)
+    details["power_law"] = power_law_feats
 
     # ── Scoring heuristics ─────────────────────────────
 
@@ -190,6 +266,37 @@ def analyze(image_path: str) -> LayerResult:
         flags.append("Uniform DCT block patterns — suggests synthetic generation")
         score += 0.15
     elif dct_std < 0.5:
+        score += 0.05
+
+    # 5. Power-law β exponent (Doloriel et al.)
+    #    Natural images: β ≈ 1.8–2.2; AI-generated: β deviates
+    beta_dev = power_law_feats["beta_deviation"]
+    beta_exp = power_law_feats["beta_exponent"]
+    pl_residual = power_law_feats["power_law_residual"]
+    n_bumps = power_law_feats["n_spectral_bumps"]
+
+    if beta_dev > 0.8:
+        flags.append(f"Power-law β={beta_exp:.2f} deviates strongly from natural (β≈2.0)")
+        score += 0.20
+    elif beta_dev > 0.4:
+        flags.append(f"Power-law β={beta_exp:.2f} — moderate deviation")
+        score += 0.10
+    elif beta_dev < 0.15:
+        # Very close to natural β — slightly reduce score
+        score -= 0.05
+
+    # 6. Power-law fit residual — poor fit means non-natural frequency distribution
+    if pl_residual > 0.3:
+        flags.append(f"High spectral power-law residual ({pl_residual:.3f}) — non-natural PSD")
+        score += 0.10
+    elif pl_residual > 0.15:
+        score += 0.05
+
+    # 7. Spectral bumps at specific frequencies (generation artifacts)
+    if n_bumps >= 4:
+        flags.append(f"Multiple spectral bumps ({n_bumps}) — periodic generation artifacts")
+        score += 0.10
+    elif n_bumps >= 2:
         score += 0.05
 
     score = min(1.0, score)

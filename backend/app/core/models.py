@@ -26,6 +26,19 @@ class LayerName(str, enum.Enum):
     BEHAVIORAL = "behavioral"
     GEMINI = "gemini"
     NOISE = "noise"
+    CLIP_DETECT = "clip_detect"
+    CNN_DETECT = "cnn_detect"
+    WATERMARK = "watermark"
+    TRUFOR = "trufor"
+    DIRE = "dire"
+    GRADIENT = "gradient"
+    LSB = "lsb"
+    DCT_HIST = "dct_hist"
+    GAN_FINGERPRINT = "gan_fingerprint"
+    ATTENTION_PATTERN = "attention_pattern"
+    TEXTURE = "texture"
+    NPR = "npr"
+    MLEP = "mlep"
 
 
 # ── Layer Results ──────────────────────────────────────
@@ -69,6 +82,7 @@ class AnalysisResponse(BaseModel):
     layer_results: list[LayerResult]
     hash_matches: list[HashMatch] = Field(default_factory=list)
     ela_heatmap_b64: Optional[str] = None
+    trufor_heatmap_b64: Optional[str] = None
     gemini_reasoning: Optional[str] = None
     processing_time_ms: int
     created_at: datetime

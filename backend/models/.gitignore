@@ -1,0 +1,4 @@
+# Model weight cache — downloaded via download_models.py
+# Do not commit to git
+*
+!.gitignore

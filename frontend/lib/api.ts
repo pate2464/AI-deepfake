@@ -23,6 +23,7 @@ export interface AnalysisResponse {
   layer_results: LayerResult[];
   hash_matches: HashMatch[];
   ela_heatmap_b64?: string;
+  trufor_heatmap_b64?: string;
   gemini_reasoning?: string;
   processing_time_ms: number;
   created_at: string;

@@ -7,12 +7,14 @@ import { layerIcon, layerLabel, riskColor, scoreToPercent } from "@/lib/utils";
 interface LayerCardProps {
   result: LayerResult;
   elaHeatmap?: string;
+  truforHeatmap?: string;
   geminiReasoning?: string;
 }
 
 export default function LayerCard({
   result,
   elaHeatmap,
+  truforHeatmap,
   geminiReasoning,
 }: LayerCardProps) {
   const [expanded, setExpanded] = useState(false);
@@ -102,6 +104,23 @@ export default function LayerCard({
               />
               <p className="text-xs text-[#a0a0a0] mt-1">
                 Bright areas = high compression error. Uniform brightness across the image suggests AI generation.
+              </p>
+            </div>
+          )}
+
+          {/* TruFor Manipulation Heatmap */}
+          {result.layer === "trufor" && truforHeatmap && (
+            <div className="mt-4">
+              <h4 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+                Manipulation Localisation Map
+              </h4>
+              <img
+                src={`data:image/png;base64,${truforHeatmap}`}
+                alt="TruFor Manipulation Heatmap"
+                className="rounded-lg max-w-full border border-[#2a2a2a]"
+              />
+              <p className="text-xs text-[#a0a0a0] mt-1">
+                Red/warm areas = high probability of pixel-level manipulation. Blue = likely authentic.
               </p>
             </div>
           )}

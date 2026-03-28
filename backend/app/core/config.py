@@ -32,15 +32,35 @@ class Settings(BaseSettings):
     RISK_LOW_THRESHOLD: float = 0.3
     RISK_HIGH_THRESHOLD: float = 0.6
 
-    # Ensemble weights
+    # Ensemble weights (19 layers)
+    # VLM + TruFor + CLIP are strongest for modern diffusion-model detection.
+    # GAN-specific detectors (noise, gradient, GAN fingerprint) are de-weighted
+    # because diffusion outputs bypass their heuristics.
     WEIGHT_EXIF: float = 0.10
-    WEIGHT_ELA: float = 0.15
-    WEIGHT_HASH: float = 0.20
-    WEIGHT_AI_MODEL: float = 0.15
-    WEIGHT_C2PA: float = 0.05
-    WEIGHT_BEHAVIORAL: float = 0.20
+    WEIGHT_ELA: float = 0.06
+    WEIGHT_HASH: float = 0.10
+    WEIGHT_AI_MODEL: float = 0.06
+    WEIGHT_C2PA: float = 0.03
+    WEIGHT_BEHAVIORAL: float = 0.05
     WEIGHT_GEMINI: float = 0.10
-    WEIGHT_NOISE: float = 0.05
+    WEIGHT_NOISE: float = 0.03
+    WEIGHT_CLIP_DETECT: float = 0.15
+    WEIGHT_CNN_DETECT: float = 0.04
+    WEIGHT_WATERMARK: float = 0.03
+    WEIGHT_TRUFOR: float = 0.14
+    WEIGHT_DIRE: float = 0.03
+    WEIGHT_GRADIENT: float = 0.03
+    WEIGHT_LSB: float = 0.03
+    WEIGHT_DCT_HIST: float = 0.03
+    WEIGHT_GAN_FINGERPRINT: float = 0.03
+    WEIGHT_ATTENTION_PATTERN: float = 0.06
+    WEIGHT_TEXTURE: float = 0.04
+    WEIGHT_NPR: float = 0.12
+    WEIGHT_MLEP: float = 0.10
+
+    # ML model settings
+    ENABLE_DIRE: bool = True
+    MODEL_CACHE_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "models")
 
     # Behavioral thresholds
     BEHAVIORAL_MAX_CLAIMS_30D: int = 3

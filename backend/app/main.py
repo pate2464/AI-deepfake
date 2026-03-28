@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description="8-layer AI-generated image fraud detection pipeline",
+    description="21-layer AI-generated image fraud detection pipeline",
     lifespan=lifespan,
 )
 
