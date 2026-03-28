@@ -1,6 +1,8 @@
 # 🛡️ AI Fraud Detector
 
-**8-layer deep analysis pipeline for detecting AI-generated fraudulent images**
+**Multi-layer deep analysis pipeline for detecting AI-generated fraudulent images**
+
+> Note: this project started as an 8-layer hackathon prototype. The current backend runs a larger ensemble; trust the live API/UI output and `backend/app/engine/pipeline.py` for the active layer set.
 
 Built for HackyIndy 2026 — 48-hour hackathon
 
@@ -18,7 +20,7 @@ Built for HackyIndy 2026 — 48-hour hackathon
 │                  Backend (FastAPI + Python)                   │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │              8-Layer Detection Pipeline                │   │
+│  │             Multi-Layer Detection Pipeline             │   │
 │  │                                                        │   │
 │  │  L1  EXIF Metadata Forensics        (0.10 weight)     │   │
 │  │  L2  Error Level Analysis (ELA)     (0.15 weight)     │   │
@@ -37,7 +39,7 @@ Built for HackyIndy 2026 — 48-hour hackathon
 └──────────────────────────────────────────────────────────────┘
 ```
 
-## Detection Layers
+## Core Detection Layers
 
 | # | Layer | What it detects | Key technique |
 |---|-------|----------------|---------------|
@@ -53,12 +55,22 @@ Built for HackyIndy 2026 — 48-hour hackathon
 ## Quick Start
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.12+
 - Node.js 18+
+
+### Fastest Local Run on Windows
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
+```
+
+This opens backend and frontend in separate PowerShell windows with the correct working directories.
+
+### Manual Run
 
 ### 1. Backend
 
-```bash
+```powershell
 # Create virtual environment
 python -m venv .venv
 .venv\Scripts\activate  # Windows
@@ -72,14 +84,14 @@ cp backend/.env.example backend/.env
 # Edit backend/.env and add your GEMINI_API_KEY (optional — layer degrades gracefully)
 
 # Start server
-cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+Set-Location .\backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 ### 2. Frontend
 
-```bash
-cd frontend
+```powershell
+Set-Location .\frontend
 npm install
 npm run dev
 ```
@@ -88,11 +100,13 @@ npm run dev
 
 Navigate to **http://localhost:3000** — drop an image to analyze.
 
+If you see `Could not import module "app.main"`, the backend was started from the wrong directory. Use `start-dev.ps1` or the exact backend command above.
+
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/v1/analyze` | Upload image for 8-layer analysis |
+| `POST` | `/api/v1/analyze` | Upload image for full-ensemble analysis |
 | `GET` | `/api/v1/history` | List previous analyses |
 | `GET` | `/api/v1/analysis/{id}` | Get detailed analysis by ID |
 | `GET` | `/api/v1/stats` | Aggregate statistics |
@@ -112,7 +126,7 @@ curl -X POST http://localhost:8000/api/v1/analyze \
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy 2.0 (async), aiosqlite
 - **Frontend**: Next.js 14, React 18, Tailwind CSS, TypeScript
 - **Detection**: Pillow, NumPy, SciPy, OpenCV, imagehash, c2pa-python
-- **AI**: Google Gemini 2.0 Flash (multimodal vision)
+- **AI**: Google Gemini 2.5 Flash (multimodal vision)
 - **Database**: SQLite (zero-config, single-file)
 
 ## Project Structure

@@ -1,6 +1,7 @@
 """SQLAlchemy async database setup and ORM models."""
 
 from datetime import datetime, timezone
+import logging
 
 from sqlalchemy import (
     JSON,
@@ -17,6 +18,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import DeclarativeBase, relationship
 
 from app.core.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 # ── Engine & Session ───────────────────────────────────
@@ -53,6 +57,8 @@ class Claim(Base):
     risk_score = Column(Float, default=0.0)
     risk_tier = Column(String(16), default="low")
     layer_scores = Column(JSON, default=dict)
+    layer_results_detail = Column(JSON, default=list)
+    scoring_summary = Column(JSON, default=dict)
     ela_heatmap_path = Column(String(1024), nullable=True)
     gemini_reasoning = Column(Text, nullable=True)
     processing_time_ms = Column(Integer, default=0)
@@ -90,6 +96,25 @@ class HashMatchRecord(Base):
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await _ensure_claim_columns(conn)
+
+
+async def _ensure_claim_columns(conn) -> None:
+    """Backfill new JSON columns for SQLite installs without migrations."""
+    result = await conn.exec_driver_sql("PRAGMA table_info(claims)")
+    existing_columns = {row[1] for row in result.fetchall()}
+    required_columns = {
+        "layer_results_detail": "JSON",
+        "scoring_summary": "JSON",
+    }
+
+    for column_name, column_type in required_columns.items():
+        if column_name in existing_columns:
+            continue
+        await conn.exec_driver_sql(
+            f"ALTER TABLE claims ADD COLUMN {column_name} {column_type}"
+        )
+        logger.info("Added missing claims.%s column for richer analysis persistence", column_name)
 
 
 async def get_session() -> AsyncSession:

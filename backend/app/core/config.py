@@ -1,8 +1,32 @@
 """Application configuration with environment variable support."""
 
 import os
+import re
 from pathlib import Path
 from pydantic_settings import BaseSettings
+
+
+BACKEND_ROOT = Path(__file__).resolve().parent.parent.parent
+WINDOWS_ABSOLUTE_PATH = re.compile(r"^[A-Za-z]:[/\\]")
+
+
+def _resolve_database_url(url: str) -> str:
+    """Resolve relative SQLite URLs against the backend directory."""
+    for prefix in ("sqlite+aiosqlite:///", "sqlite:///"):
+        if not url.startswith(prefix):
+            continue
+
+        raw_path = url[len(prefix):]
+        if raw_path == ":memory:":
+            return url
+
+        if Path(raw_path).is_absolute() or WINDOWS_ABSOLUTE_PATH.match(raw_path):
+            return url
+
+        resolved_path = (BACKEND_ROOT / raw_path).resolve().as_posix()
+        return f"{prefix}{resolved_path}"
+
+    return url
 
 
 class Settings(BaseSettings):
@@ -19,7 +43,7 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-2.5-flash"
 
     # Upload
-    UPLOAD_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "uploads")
+    UPLOAD_DIR: str = str(BACKEND_ROOT / "uploads")
     MAX_FILE_SIZE_MB: int = 20
 
     # Detection thresholds
@@ -32,7 +56,7 @@ class Settings(BaseSettings):
     RISK_LOW_THRESHOLD: float = 0.3
     RISK_HIGH_THRESHOLD: float = 0.6
 
-    # Ensemble weights (19 layers)
+    # Ensemble weights (21 layers)
     # VLM + TruFor + CLIP are strongest for modern diffusion-model detection.
     # GAN-specific detectors (noise, gradient, GAN fingerprint) are de-weighted
     # because diffusion outputs bypass their heuristics.
@@ -60,7 +84,7 @@ class Settings(BaseSettings):
 
     # ML model settings
     ENABLE_DIRE: bool = True
-    MODEL_CACHE_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "models")
+    MODEL_CACHE_DIR: str = str(BACKEND_ROOT / "models")
 
     # Behavioral thresholds
     BEHAVIORAL_MAX_CLAIMS_30D: int = 3
@@ -70,13 +94,14 @@ class Settings(BaseSettings):
     model_config = {
         "env_file": [
             ".env",  # current directory
-            str(Path(__file__).resolve().parent.parent.parent / ".env"),  # backend/.env
+            str(BACKEND_ROOT / ".env"),  # backend/.env
         ],
         "extra": "ignore",
     }
 
 
 settings = Settings()
+settings.DATABASE_URL = _resolve_database_url(settings.DATABASE_URL)
 
 # Ensure upload dir exists
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)

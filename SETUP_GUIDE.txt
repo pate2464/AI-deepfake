@@ -1,6 +1,6 @@
 ================================================================================
   AI FRAUD DETECTOR — COMPLETE SETUP & RUN GUIDE
-  13-Layer AI-Generated Image Fraud Detection System
+  Multi-Layer AI-Generated Image Fraud Detection System
   HackyIndy 2026 Hackathon
 ================================================================================
 
@@ -320,6 +320,14 @@ return an error result with confidence 0.
 ================================================================================
 
 You need TWO terminals open — one for backend, one for frontend.
+
+--- Quick Windows option ---
+
+  From the repo root, run:
+    powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
+
+  This opens backend and frontend in separate PowerShell windows with the
+  correct working directories.
 
 --- Terminal 1: Backend ---
 

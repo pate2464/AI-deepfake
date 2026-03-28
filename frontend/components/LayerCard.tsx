@@ -18,6 +18,18 @@ export default function LayerCard({
   geminiReasoning,
 }: LayerCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const formatPercent = (value?: number) =>
+    value === undefined ? "-" : `${(value * 100).toFixed(1)}%`;
+  const roleLabel = {
+    "core-score": "Core",
+    "supporting-score": "Supporting",
+    "other-layer": "Other",
+  }[result.score_role ?? "supporting-score"];
+  const roleBadgeClass = {
+    "core-score": "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+    "supporting-score": "border-sky-500/30 bg-sky-500/10 text-sky-300",
+    "other-layer": "border-zinc-500/30 bg-zinc-500/10 text-zinc-300",
+  }[result.score_role ?? "supporting-score"];
 
   const percent = scoreToPercent(result.score);
   const tier =
@@ -39,8 +51,22 @@ export default function LayerCard({
         <div className="flex items-center gap-3">
           <span className="text-2xl">{layerIcon(result.layer)}</span>
           <div>
-            <h3 className="font-semibold text-sm">{layerLabel(result.layer)}</h3>
-            {result.flags.length > 0 && (
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-sm">{layerLabel(result.layer)}</h3>
+              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${roleBadgeClass}`}>
+                {roleLabel}
+              </span>
+              {result.suppressed && (
+                <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+                  Guardrailed
+                </span>
+              )}
+            </div>
+            {result.suppression_reason ? (
+              <p className="text-xs text-amber-300/90 mt-0.5 line-clamp-2">
+                {result.suppression_reason}
+              </p>
+            ) : result.flags.length > 0 && (
               <p className="text-xs text-[#a0a0a0] mt-0.5 line-clamp-1">
                 {result.flags[0]}
               </p>
@@ -72,6 +98,39 @@ export default function LayerCard({
       {/* Expanded details */}
       {expanded && (
         <div className="px-4 pb-4 border-t border-[#2a2a2a]">
+          <div className="mt-3 grid grid-cols-2 md:grid-cols-6 gap-2">
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[#777]">Family</div>
+              <div className="mt-1 text-sm capitalize">{result.evidence_family ?? "unknown"}</div>
+            </div>
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[#777]">Role</div>
+              <div className="mt-1 text-sm">{roleLabel}</div>
+            </div>
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[#777]">Kind</div>
+              <div className="mt-1 text-sm capitalize">{result.implementation_kind ?? "unknown"}</div>
+            </div>
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[#777]">Weight</div>
+              <div className="mt-1 text-sm">{formatPercent(result.configured_weight)}</div>
+            </div>
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[#777]">Contribution</div>
+              <div className="mt-1 text-sm">{formatPercent(result.weighted_contribution)}</div>
+            </div>
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[#777]">Runtime</div>
+              <div className="mt-1 text-sm">{result.duration_ms !== undefined ? `${result.duration_ms}ms` : "-"}</div>
+            </div>
+          </div>
+
+          {result.suppression_reason && (
+            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+              {result.suppression_reason}
+            </div>
+          )}
+
           {/* Flags */}
           {result.flags.length > 0 && (
             <div className="mt-3">
@@ -126,13 +185,13 @@ export default function LayerCard({
           )}
 
           {/* Gemini Reasoning */}
-          {result.layer === "gemini" && geminiReasoning && (
+          {result.layer === "gemini" && (geminiReasoning || result.details?.template_like_output) && (
             <div className="mt-4">
               <h4 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
                 Gemini AI Reasoning
               </h4>
               <div className="bg-[#111] rounded-lg p-3 text-sm leading-relaxed border border-[#2a2a2a]">
-                {geminiReasoning}
+                {geminiReasoning || "Local VLM did not return usable free-text reasoning for this image. The output looked like a copied template, so it was suppressed."}
               </div>
             </div>
           )}

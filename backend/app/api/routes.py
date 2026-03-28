@@ -34,7 +34,7 @@ async def analyze_image(
     claim_description: str | None = Form(None),
     session: AsyncSession = Depends(get_session),
 ):
-    """Upload an image for fraud analysis across all 8 detection layers."""
+    """Upload an image for full-ensemble analysis with scoring metadata."""
     # Validate file type
     allowed_types = {
         "image/jpeg", "image/png", "image/webp", "image/tiff",
@@ -126,6 +126,8 @@ async def get_analysis(
         "risk_score": claim.risk_score,
         "risk_tier": claim.risk_tier,
         "layer_scores": claim.layer_scores,
+        "layer_results": claim.layer_results_detail or [],
+        "scoring_summary": claim.scoring_summary or {},
         "gemini_reasoning": claim.gemini_reasoning,
         "processing_time_ms": claim.processing_time_ms,
         "created_at": claim.created_at.isoformat(),

@@ -18,12 +18,12 @@ logger = logging.getLogger(__name__)
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.layer_catalog import get_layer_metadata
 from app.core.models import (
     AnalysisContext,
     AnalysisResponse,
     HashMatch,
     LayerResult,
-    RiskTier,
 )
 from app.db.database import Claim, ImageHash as ImageHashDB, HashMatchRecord
 from app.detectors import (
@@ -102,6 +102,36 @@ async def _run_sync_detector(func, *args) -> Any:
     return await loop.run_in_executor(None, func, *args)
 
 
+async def _run_timed(awaitable) -> tuple[Any, int]:
+    """Run a detector and capture elapsed time even when it fails."""
+    started = time.perf_counter()
+    try:
+        result = await awaitable
+    except Exception as exc:  # pragma: no cover - defensive wrapper
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        return exc, elapsed_ms
+    elapsed_ms = int((time.perf_counter() - started) * 1000)
+    return result, elapsed_ms
+
+
+def _annotate_layer_result(layer_result: LayerResult, duration_ms: int) -> LayerResult:
+    """Attach canonical metadata and timing to a layer result."""
+    metadata = get_layer_metadata(layer_result.layer)
+    layer_result.duration_ms = duration_ms
+    layer_result.evidence_family = metadata.get("evidence_family")
+    layer_result.implementation_kind = metadata.get("implementation_kind")
+    layer_result.score_role = metadata.get("score_role")
+    return layer_result
+
+
+def _build_error_layer_result(layer: str, error: Exception | str, duration_ms: int) -> LayerResult:
+    """Create a structured error result with timing and catalog metadata."""
+    return _annotate_layer_result(
+        LayerResult(layer=layer, score=0.0, confidence=0.0, error=str(error)),
+        duration_ms,
+    )
+
+
 async def run_pipeline(
     image_path: str,
     filename: str,
@@ -125,29 +155,29 @@ async def run_pipeline(
     # ── Run layers in parallel ─────────────────────────
     # EXIF + C2PA use ORIGINAL (need metadata / embedded manifests).
     # All pixel-analysis detectors use the pre-processed JPEG.
-    exif_task = _run_sync_detector(exif_detector.analyze, image_path)
-    ela_task = _run_sync_detector(ela_detector.analyze, pp_path)
-    ai_task = _run_sync_detector(ai_model_detector.analyze, pp_path)
-    c2pa_task = _run_sync_detector(c2pa_detector.analyze, image_path)
-    noise_task = _run_sync_detector(noise_detector.analyze, pp_path)
-    clip_task = _run_sync_detector(clip_detector.analyze, pp_path)
-    cnn_task = _run_sync_detector(cnn_detector.analyze, pp_path)
-    watermark_task = _run_sync_detector(watermark_detector.analyze, pp_path)
-    trufor_task = _run_sync_detector(trufor_detector.analyze, pp_path)
-    dire_task = _run_sync_detector(dire_detector.analyze, pp_path)
-    gradient_task = _run_sync_detector(gradient_detector.analyze, pp_path)
-    lsb_task = _run_sync_detector(lsb_detector.analyze, pp_path)
-    dct_hist_task = _run_sync_detector(dct_hist_detector.analyze, pp_path)
-    gan_fp_task = _run_sync_detector(gan_fingerprint_detector.analyze, pp_path)
-    attn_task = _run_sync_detector(attention_pattern_detector.analyze, pp_path)
-    texture_task = _run_sync_detector(texture_detector.analyze, pp_path)
-    npr_task = _run_sync_detector(npr_detector.analyze, pp_path)
-    mlep_task = _run_sync_detector(mlep_detector.analyze, pp_path)
+    exif_task = _run_timed(_run_sync_detector(exif_detector.analyze, image_path))
+    ela_task = _run_timed(_run_sync_detector(ela_detector.analyze, pp_path))
+    ai_task = _run_timed(_run_sync_detector(ai_model_detector.analyze, pp_path))
+    c2pa_task = _run_timed(_run_sync_detector(c2pa_detector.analyze, image_path))
+    noise_task = _run_timed(_run_sync_detector(noise_detector.analyze, pp_path))
+    clip_task = _run_timed(_run_sync_detector(clip_detector.analyze, pp_path))
+    cnn_task = _run_timed(_run_sync_detector(cnn_detector.analyze, pp_path))
+    watermark_task = _run_timed(_run_sync_detector(watermark_detector.analyze, pp_path))
+    trufor_task = _run_timed(_run_sync_detector(trufor_detector.analyze, pp_path))
+    dire_task = _run_timed(_run_sync_detector(dire_detector.analyze, pp_path))
+    gradient_task = _run_timed(_run_sync_detector(gradient_detector.analyze, pp_path))
+    lsb_task = _run_timed(_run_sync_detector(lsb_detector.analyze, pp_path))
+    dct_hist_task = _run_timed(_run_sync_detector(dct_hist_detector.analyze, pp_path))
+    gan_fp_task = _run_timed(_run_sync_detector(gan_fingerprint_detector.analyze, pp_path))
+    attn_task = _run_timed(_run_sync_detector(attention_pattern_detector.analyze, pp_path))
+    texture_task = _run_timed(_run_sync_detector(texture_detector.analyze, pp_path))
+    npr_task = _run_timed(_run_sync_detector(npr_detector.analyze, pp_path))
+    mlep_task = _run_timed(_run_sync_detector(mlep_detector.analyze, pp_path))
 
     # Async detectors
-    hash_task = hash_detector.analyze(pp_path, claim.id, session)
-    behavioral_task = behavioral_detector.analyze(context, session)
-    gemini_task = gemini_detector.analyze(pp_path)
+    hash_task = _run_timed(hash_detector.analyze(pp_path, claim.id, session))
+    behavioral_task = _run_timed(behavioral_detector.analyze(context, session))
+    gemini_task = _run_timed(gemini_detector.analyze(pp_path))
 
     # Gather all results
     results = await asyncio.gather(
@@ -172,7 +202,6 @@ async def run_pipeline(
         texture_task,    # 18
         npr_task,        # 19
         mlep_task,       # 20
-        return_exceptions=True,
     )
 
     # ── Unpack results ─────────────────────────────────
@@ -184,144 +213,167 @@ async def run_pipeline(
     gemini_reasoning: str | None = None
 
     # L1: EXIF
-    if isinstance(results[0], LayerResult):
-        layer_results.append(results[0])
-    elif isinstance(results[0], Exception):
-        layer_results.append(LayerResult(layer="exif", score=0.0, confidence=0.0, error=str(results[0])))
+    raw_result, duration_ms = results[0]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("exif", raw_result, duration_ms))
 
     # L2: ELA (returns tuple)
-    if isinstance(results[1], tuple):
-        lr, heatmap = results[1]
-        layer_results.append(lr)
+    raw_result, duration_ms = results[1]
+    if isinstance(raw_result, tuple):
+        lr, heatmap = raw_result
+        layer_results.append(_annotate_layer_result(lr, duration_ms))
         ela_heatmap_b64 = heatmap
-    elif isinstance(results[1], Exception):
-        layer_results.append(LayerResult(layer="ela", score=0.0, confidence=0.0, error=str(results[1])))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("ela", raw_result, duration_ms))
 
     # L4: AI Model
-    if isinstance(results[2], LayerResult):
-        layer_results.append(results[2])
-    elif isinstance(results[2], Exception):
-        layer_results.append(LayerResult(layer="ai_model", score=0.0, confidence=0.0, error=str(results[2])))
+    raw_result, duration_ms = results[2]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("ai_model", raw_result, duration_ms))
 
     # L5: C2PA
-    if isinstance(results[3], LayerResult):
-        layer_results.append(results[3])
-    elif isinstance(results[3], Exception):
-        layer_results.append(LayerResult(layer="c2pa", score=0.0, confidence=0.0, error=str(results[3])))
+    raw_result, duration_ms = results[3]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("c2pa", raw_result, duration_ms))
 
     # L8: Noise / PRNU
-    if isinstance(results[4], LayerResult):
-        layer_results.append(results[4])
-    elif isinstance(results[4], Exception):
-        layer_results.append(LayerResult(layer="noise", score=0.0, confidence=0.0, error=str(results[4])))
+    raw_result, duration_ms = results[4]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("noise", raw_result, duration_ms))
 
     # L3: Hash (returns tuple)
-    if isinstance(results[5], tuple):
-        lr, matches, hashes = results[5]
-        layer_results.append(lr)
+    raw_result, duration_ms = results[5]
+    if isinstance(raw_result, tuple):
+        lr, matches, hashes = raw_result
+        layer_results.append(_annotate_layer_result(lr, duration_ms))
         hash_matches = matches
         computed_hashes = hashes
-    elif isinstance(results[5], Exception):
-        layer_results.append(LayerResult(layer="hash", score=0.0, confidence=0.0, error=str(results[5])))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("hash", raw_result, duration_ms))
 
     # L6: Behavioral
-    if isinstance(results[6], LayerResult):
-        layer_results.append(results[6])
-    elif isinstance(results[6], Exception):
-        layer_results.append(LayerResult(layer="behavioral", score=0.0, confidence=0.0, error=str(results[6])))
+    raw_result, duration_ms = results[6]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("behavioral", raw_result, duration_ms))
 
     # L7: Gemini (returns tuple)
-    if isinstance(results[7], tuple):
-        lr, reasoning = results[7]
-        layer_results.append(lr)
+    raw_result, duration_ms = results[7]
+    if isinstance(raw_result, tuple):
+        lr, reasoning = raw_result
+        layer_results.append(_annotate_layer_result(lr, duration_ms))
         gemini_reasoning = reasoning
-    elif isinstance(results[7], Exception):
-        layer_results.append(LayerResult(layer="gemini", score=0.0, confidence=0.0, error=str(results[7])))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("gemini", raw_result, duration_ms))
 
     # L9: CLIP Detection
-    if isinstance(results[8], LayerResult):
-        layer_results.append(results[8])
-    elif isinstance(results[8], Exception):
-        layer_results.append(LayerResult(layer="clip_detect", score=0.0, confidence=0.0, error=str(results[8])))
+    raw_result, duration_ms = results[8]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("clip_detect", raw_result, duration_ms))
 
     # L10: CNN Detection
-    if isinstance(results[9], LayerResult):
-        layer_results.append(results[9])
-    elif isinstance(results[9], Exception):
-        layer_results.append(LayerResult(layer="cnn_detect", score=0.0, confidence=0.0, error=str(results[9])))
+    raw_result, duration_ms = results[9]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("cnn_detect", raw_result, duration_ms))
 
     # L11: Watermark
-    if isinstance(results[10], LayerResult):
-        layer_results.append(results[10])
-    elif isinstance(results[10], Exception):
-        layer_results.append(LayerResult(layer="watermark", score=0.0, confidence=0.0, error=str(results[10])))
+    raw_result, duration_ms = results[10]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("watermark", raw_result, duration_ms))
 
     # L12: TruFor (returns tuple)
-    if isinstance(results[11], tuple):
-        lr, heatmap = results[11]
-        layer_results.append(lr)
+    raw_result, duration_ms = results[11]
+    if isinstance(raw_result, tuple):
+        lr, heatmap = raw_result
+        layer_results.append(_annotate_layer_result(lr, duration_ms))
         trufor_heatmap_b64 = heatmap
-    elif isinstance(results[11], LayerResult):
-        layer_results.append(results[11])
-    elif isinstance(results[11], Exception):
-        layer_results.append(LayerResult(layer="trufor", score=0.0, confidence=0.0, error=str(results[11])))
+    elif isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("trufor", raw_result, duration_ms))
 
     # L13: DIRE
-    if isinstance(results[12], LayerResult):
-        layer_results.append(results[12])
-    elif isinstance(results[12], Exception):
-        layer_results.append(LayerResult(layer="dire", score=0.0, confidence=0.0, error=str(results[12])))
+    raw_result, duration_ms = results[12]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("dire", raw_result, duration_ms))
 
     # L14: Gradient Distribution
-    if isinstance(results[13], LayerResult):
-        layer_results.append(results[13])
-    elif isinstance(results[13], Exception):
-        layer_results.append(LayerResult(layer="gradient", score=0.0, confidence=0.0, error=str(results[13])))
+    raw_result, duration_ms = results[13]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("gradient", raw_result, duration_ms))
 
     # L15: LSB Forensics
-    if isinstance(results[14], LayerResult):
-        layer_results.append(results[14])
-    elif isinstance(results[14], Exception):
-        layer_results.append(LayerResult(layer="lsb", score=0.0, confidence=0.0, error=str(results[14])))
+    raw_result, duration_ms = results[14]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("lsb", raw_result, duration_ms))
 
     # L16: DCT Histogram Analysis
-    if isinstance(results[15], LayerResult):
-        layer_results.append(results[15])
-    elif isinstance(results[15], Exception):
-        layer_results.append(LayerResult(layer="dct_hist", score=0.0, confidence=0.0, error=str(results[15])))
+    raw_result, duration_ms = results[15]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("dct_hist", raw_result, duration_ms))
 
     # L17: GAN Spectral Fingerprint
-    if isinstance(results[16], LayerResult):
-        layer_results.append(results[16])
-    elif isinstance(results[16], Exception):
-        layer_results.append(LayerResult(layer="gan_fingerprint", score=0.0, confidence=0.0, error=str(results[16])))
+    raw_result, duration_ms = results[16]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("gan_fingerprint", raw_result, duration_ms))
 
     # L18: Attention Pattern Detection
-    if isinstance(results[17], LayerResult):
-        layer_results.append(results[17])
-    elif isinstance(results[17], Exception):
-        layer_results.append(LayerResult(layer="attention_pattern", score=0.0, confidence=0.0, error=str(results[17])))
+    raw_result, duration_ms = results[17]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("attention_pattern", raw_result, duration_ms))
 
     # L19: Texture Analysis
-    if isinstance(results[18], LayerResult):
-        layer_results.append(results[18])
-    elif isinstance(results[18], Exception):
-        layer_results.append(LayerResult(layer="texture", score=0.0, confidence=0.0, error=str(results[18])))
+    raw_result, duration_ms = results[18]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("texture", raw_result, duration_ms))
 
     # L20: NPR Pixel Residuals
-    if isinstance(results[19], LayerResult):
-        layer_results.append(results[19])
-    elif isinstance(results[19], Exception):
-        layer_results.append(LayerResult(layer="npr", score=0.0, confidence=0.0, error=str(results[19])))
+    raw_result, duration_ms = results[19]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("npr", raw_result, duration_ms))
 
     # L21: MLEP Entropy Patterns
-    if isinstance(results[20], LayerResult):
-        layer_results.append(results[20])
-    elif isinstance(results[20], Exception):
-        layer_results.append(LayerResult(layer="mlep", score=0.0, confidence=0.0, error=str(results[20])))
+    raw_result, duration_ms = results[20]
+    if isinstance(raw_result, LayerResult):
+        layer_results.append(_annotate_layer_result(raw_result, duration_ms))
+    elif isinstance(raw_result, Exception):
+        layer_results.append(_build_error_layer_result("mlep", raw_result, duration_ms))
 
     # ── Ensemble scoring ───────────────────────────────
-    risk_score, risk_tier = compute_risk_score(layer_results, hash_matches)
+    scoring_summary = compute_risk_score(layer_results, hash_matches)
+    risk_score = scoring_summary.final_score
+    risk_tier = scoring_summary.risk_tier
 
     processing_time_ms = int((time.monotonic() - start) * 1000)
 
@@ -329,6 +381,8 @@ async def run_pipeline(
     claim.risk_score = risk_score
     claim.risk_tier = risk_tier.value
     claim.layer_scores = {lr.layer.value: lr.score for lr in layer_results}
+    claim.layer_results_detail = [lr.model_dump(mode="json") for lr in layer_results]
+    claim.scoring_summary = scoring_summary.model_dump(mode="json")
     claim.gemini_reasoning = gemini_reasoning
     claim.processing_time_ms = processing_time_ms
 
@@ -377,6 +431,7 @@ async def run_pipeline(
         filename=filename,
         risk_score=risk_score,
         risk_tier=risk_tier,
+        scoring_summary=scoring_summary,
         layer_results=layer_results,
         hash_matches=hash_matches,
         ela_heatmap_b64=ela_heatmap_b64,

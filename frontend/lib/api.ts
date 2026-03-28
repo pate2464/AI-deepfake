@@ -7,6 +7,31 @@ export interface LayerResult {
   flags: string[];
   details: Record<string, any>;
   error?: string;
+  evidence_family?: string;
+  implementation_kind?: string;
+  configured_weight?: number;
+  effective_weight?: number;
+  weighted_contribution?: number;
+  duration_ms?: number;
+  score_role?: string;
+  suppressed?: boolean;
+  suppression_reason?: string;
+}
+
+export interface ScoringSummary {
+  scoring_version: string;
+  method: string;
+  weighted_score: number;
+  final_score: number;
+  risk_tier: "low" | "medium" | "high";
+  override_applied: boolean;
+  override_reason?: string;
+  consensus_floor_applied: boolean;
+  consensus_floor_score?: number;
+  contributing_layers: string[];
+  consensus_signal_families: string[];
+  conflicting_signals: string[];
+  scoring_notes: string[];
 }
 
 export interface HashMatch {
@@ -20,6 +45,7 @@ export interface AnalysisResponse {
   filename: string;
   risk_score: number;
   risk_tier: "low" | "medium" | "high";
+  scoring_summary: ScoringSummary;
   layer_results: LayerResult[];
   hash_matches: HashMatch[];
   ela_heatmap_b64?: string;

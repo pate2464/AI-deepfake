@@ -50,6 +50,15 @@ class LayerResult(BaseModel):
     flags: list[str] = Field(default_factory=list)
     details: dict[str, Any] = Field(default_factory=dict)
     error: Optional[str] = None
+    evidence_family: Optional[str] = None
+    implementation_kind: Optional[str] = None
+    configured_weight: Optional[float] = Field(default=None, ge=0.0)
+    effective_weight: Optional[float] = Field(default=None, ge=0.0)
+    weighted_contribution: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    duration_ms: Optional[int] = Field(default=None, ge=0)
+    score_role: Optional[str] = None
+    suppressed: bool = False
+    suppression_reason: Optional[str] = None
 
 
 # ── Hash Match ─────────────────────────────────────────
@@ -72,6 +81,22 @@ class AnalysisContext(BaseModel):
     claim_description: Optional[str] = None
 
 
+class ScoringSummary(BaseModel):
+    scoring_version: str = "research-v3"
+    method: str = "backbone_ensemble"
+    weighted_score: float = Field(ge=0.0, le=1.0)
+    final_score: float = Field(ge=0.0, le=1.0)
+    risk_tier: RiskTier
+    override_applied: bool = False
+    override_reason: Optional[str] = None
+    consensus_floor_applied: bool = False
+    consensus_floor_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    contributing_layers: list[str] = Field(default_factory=list)
+    consensus_signal_families: list[str] = Field(default_factory=list)
+    conflicting_signals: list[str] = Field(default_factory=list)
+    scoring_notes: list[str] = Field(default_factory=list)
+
+
 # ── Analysis Response ──────────────────────────────────
 
 class AnalysisResponse(BaseModel):
@@ -79,6 +104,7 @@ class AnalysisResponse(BaseModel):
     filename: str
     risk_score: float = Field(ge=0.0, le=1.0)
     risk_tier: RiskTier
+    scoring_summary: ScoringSummary
     layer_results: list[LayerResult]
     hash_matches: list[HashMatch] = Field(default_factory=list)
     ela_heatmap_b64: Optional[str] = None

@@ -33,24 +33,38 @@ _load_attempted = False
 VLM_MODEL_ID = "vikhyatk/moondream2"
 VLM_MAX_DIM = 768  # Resize for speed; moondream native is 378 anyway
 
+_REASONING_PLACEHOLDERS = {
+    "one concise paragraph citing only concrete evidence",
+    "one paragraph summary",
+    "reasoning",
+    "analysis",
+    "n/a",
+    "na",
+    "none",
+    "null",
+    "...",
+}
+
+_GENERIC_ARTIFACTS = {
+    "impossible anatomy",
+    "broken text",
+    "inconsistent reflections",
+    "duplicate structures",
+    "duplicated structures",
+    "melted boundaries",
+    "globally synthetic rendering",
+    "specific issue 1",
+    "specific issue 2",
+}
+
 
 FORENSIC_PROMPT = (
-    "You are an expert forensic image analyst specialising in detecting AI-generated images. "
-    "Examine this image very carefully. Look for ALL of these AI-generation artifacts:\n"
-    "1. Unnatural skin textures, plastic-like or over-smooth surfaces\n"
-    "2. Physically impossible elements: wrong number of fingers, merged objects, impossible reflections\n"
-    "3. Garbled, warped, or nonsensical text on signs, labels, or packaging\n"
-    "4. Inconsistent lighting — shadows going different directions, light sources that contradict\n"
-    "5. Repeating patterns, tiling artifacts, or copy-paste regions\n"
-    "6. Uncanny valley faces, hands, teeth, or eyes\n"
-    "7. Background inconsistencies — floating objects, impossible architecture, warped edges\n"
-    "8. Too-perfect symmetry or unrealistically uniform detail\n"
-    "9. Weird object boundaries — things melting into each other, halos around objects\n"
-    "10. Unnatural food textures — if food is shown, does it look physically plausible?\n\n"
-    "Respond with ONLY valid JSON, no other text:\n"
-    '{"is_ai": true or false, "confidence": 0.0 to 1.0, '
-    '"artifacts": ["specific issue 1", "specific issue 2"], '
-    '"reasoning": "one paragraph analysis"}'
+    "You are a cautious forensic image analyst deciding whether an image shows clear, high-confidence evidence of AI generation. "
+    "Do not treat ordinary smartphone processing, HDR, HEIC or JPEG compression, portrait smoothing, food styling, shallow depth of field, or clean studio lighting as AI evidence by themselves. "
+    "Only call the image AI-generated when you can point to concrete artifacts such as impossible anatomy, broken text, inconsistent reflections, duplicated structures, melted boundaries, or globally synthetic rendering. "
+    "If the evidence is weak, mixed, or plausibly explained by a real camera pipeline, return false and use low confidence.\n\n"
+    "Respond with ONLY valid JSON, no other text. Use actual values, not placeholder strings or copied instructions.\n"
+    'Format: {"is_ai": <boolean>, "confidence": <0.0-1.0>, "artifacts": [<concrete evidence strings>], "reasoning": <short concrete summary string>}'
 )
 
 
@@ -173,6 +187,50 @@ def _run_local_inference(image_path: str) -> str:
 
 # ── Response parsing ────────────────────────────────────
 
+def _normalize_reasoning(reasoning: Any) -> str | None:
+    """Drop empty/template reasoning so the UI does not show fake explanation."""
+    value = " ".join(str(reasoning or "").strip().split())
+    if not value:
+        return None
+    if value.lower() in _REASONING_PLACEHOLDERS:
+        return None
+    if len(value) < 24:
+        return None
+    return value
+
+
+def _normalize_artifacts(artifacts: Any) -> list[str]:
+    """Keep only usable, non-template artifact strings."""
+    if not isinstance(artifacts, list):
+        return []
+
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for item in artifacts:
+        value = " ".join(str(item).strip().split())
+        if not value:
+            continue
+        lowered = value.lower()
+        if lowered in _GENERIC_ARTIFACTS or lowered.startswith("specific issue"):
+            continue
+        if lowered in seen:
+            continue
+        cleaned.append(value)
+        seen.add(lowered)
+    return cleaned
+
+
+def _fallback_reasoning(assessment: str, artifacts: list[str]) -> str | None:
+    """Return a safe explanation only when the model produced concrete artifacts."""
+    if not artifacts:
+        return None
+    lead = (
+        "Local VLM flagged concrete artifacts"
+        if assessment == "likely_ai_generated"
+        else "Local VLM found limited suspicious evidence"
+    )
+    return f"{lead}: {'; '.join(artifacts[:3])}."
+
 def _parse_vlm_response(text: str) -> dict[str, Any]:
     """Parse VLM JSON response with robust fallback for malformed output."""
     # 1. Try to extract JSON object
@@ -189,11 +247,14 @@ def _parse_vlm_response(text: str) -> dict[str, Any]:
             is_ai = parsed.get("is_ai", parsed.get("is_ai_generated", False))
             if isinstance(is_ai, str):
                 is_ai = is_ai.lower() in ("true", "yes", "1")
+            artifacts = _normalize_artifacts(parsed.get("artifacts", []))
+            reasoning = _normalize_reasoning(parsed.get("reasoning", text[:500]))
             return {
                 "is_ai": bool(is_ai),
-                "confidence": float(parsed.get("confidence", 0.5)),
-                "artifacts": parsed.get("artifacts", []),
-                "reasoning": str(parsed.get("reasoning", text[:500])),
+                "confidence": max(0.0, min(1.0, float(parsed.get("confidence", 0.0)))),
+                "artifacts": artifacts,
+                "reasoning": reasoning,
+                "template_like_output": reasoning is None and not artifacts,
             }
     except (json.JSONDecodeError, ValueError, TypeError):
         pass
@@ -214,13 +275,14 @@ def _parse_vlm_response(text: str) -> dict[str, Any]:
     ai_hits = sum(1 for kw in ai_kws if kw in lower)
     real_hits = sum(1 for kw in real_kws if kw in lower)
     is_ai = ai_hits > real_hits
-    confidence = min(0.85, 0.35 + 0.1 * abs(ai_hits - real_hits))
+    confidence = min(0.7, 0.2 + 0.08 * abs(ai_hits - real_hits))
 
     return {
         "is_ai": is_ai,
         "confidence": confidence,
         "artifacts": [f"Text analysis: {ai_hits} AI indicators, {real_hits} real indicators"],
-        "reasoning": text[:500],
+        "reasoning": _normalize_reasoning(text[:500]),
+        "template_like_output": False,
     }
 
 
@@ -305,8 +367,9 @@ async def _gemini_fallback(image_path: str) -> tuple[LayerResult, str | None]:
 
         assessment = parsed.get("overall_assessment", "uncertain")
         gemini_confidence = float(parsed.get("confidence", 0.5))
-        reasoning = parsed.get("reasoning", "")
+        reasoning = _normalize_reasoning(parsed.get("reasoning", ""))
         details["assessment"] = assessment
+        details["source"] = "gemini_api"
 
         if assessment == "likely_ai_generated":
             base_score = 0.8
@@ -355,24 +418,28 @@ async def analyze(image_path: str) -> tuple[LayerResult, str | None]:
 
         is_ai: bool = parsed["is_ai"]
         artifacts: list = parsed.get("artifacts", [])
-        reasoning: str = parsed.get("reasoning", raw_text[:500])
+        reasoning = parsed.get("reasoning")
+        template_like_output = bool(parsed.get("template_like_output", False))
+        parsed_confidence = max(0.0, min(1.0, float(parsed.get("confidence", 0.0))))
 
-        # ── Compute confidence from response quality ────────────
-        # Small VLMs often return 0.0 for self-assessed confidence,
-        # so we derive it from how many artifacts were found and
-        # how detailed the analysis was.
+        # Small local VLMs tend to over-describe ordinary camera artifacts.
+        # Keep the confidence close to the model's self-reported certainty and
+        # allow only a small corroboration bonus from multiple concrete findings.
         n_artifacts = len(artifacts)
-        reasoning_len = len(reasoning)
-        base_conf = 0.55  # baseline for a VLM that produced valid output
-        artifact_boost = min(0.25, n_artifacts * 0.05)   # +0.05 per artifact, max +0.25
-        detail_boost = min(0.10, reasoning_len / 2000)    # longer reasoning = more confident
-        vlm_confidence = min(0.90, base_conf + artifact_boost + detail_boost)
+        corroboration_bonus = min(0.10, n_artifacts * 0.02)
+        if is_ai:
+            vlm_confidence = min(0.85, max(0.18, parsed_confidence + corroboration_bonus))
+        else:
+            vlm_confidence = min(0.8, max(0.15, parsed_confidence))
+
+        if template_like_output:
+            vlm_confidence = min(vlm_confidence, 0.12)
 
         # Score mapping  ─  AI → high score,  Real → low score
         if is_ai:
-            score = 0.70 + 0.20 * (n_artifacts / max(n_artifacts, 5))  # 0.70 – 0.90
+            score = 0.45 + 0.45 * vlm_confidence
         else:
-            score = 0.15 - 0.10 * (n_artifacts / max(n_artifacts, 3))  # 0.05 – 0.15
+            score = 0.18 - 0.12 * vlm_confidence
 
         score = max(0.0, min(1.0, score))
 
@@ -383,6 +450,11 @@ async def analyze(image_path: str) -> tuple[LayerResult, str | None]:
         for art in artifacts[:5]:
             flags.append(str(art)[:120])
 
+        if template_like_output:
+            flags.append("Local VLM returned template-like output; explanation was suppressed.")
+        elif reasoning is None:
+            reasoning = _fallback_reasoning(assessment, artifacts)
+
         return LayerResult(
             layer=LayerName.GEMINI,
             score=round(score, 4),
@@ -390,8 +462,12 @@ async def analyze(image_path: str) -> tuple[LayerResult, str | None]:
             flags=flags,
             details={
                 "model": VLM_MODEL_ID,
+                "source": "local_vlm",
                 "assessment": assessment,
                 "artifacts": artifacts,
+                "parsed_confidence": round(parsed_confidence, 4),
+                "artifact_count": n_artifacts,
+                "template_like_output": template_like_output,
                 "raw_response": raw_text[:2000],
             },
         ), reasoning

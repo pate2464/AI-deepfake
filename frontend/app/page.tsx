@@ -5,7 +5,7 @@ import ImageUpload from "@/components/ImageUpload";
 import RiskGauge from "@/components/RiskGauge";
 import LayerCard from "@/components/LayerCard";
 import { analyzeImage, type AnalysisResponse } from "@/lib/api";
-import { riskBg, riskColor } from "@/lib/utils";
+import { riskBg, riskColor, scoreToPercent } from "@/lib/utils";
 
 export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -17,6 +17,10 @@ export default function Home() {
   const [accountId, setAccountId] = useState("");
   const [deviceFp, setDeviceFp] = useState("");
   const [orderValue, setOrderValue] = useState("");
+  const formatFamily = (family: string) =>
+    family
+      .replace(/_/g, " ")
+      .replace(/^./, (value) => value.toUpperCase());
 
   const handleFileSelect = useCallback(
     async (file: File) => {
@@ -40,10 +44,25 @@ export default function Home() {
     [accountId, deviceFp, orderValue]
   );
 
-  // Sort layers by score descending for impact
+  // Sort layers by actual scoring impact first, then raw score.
   const sortedLayers = result
-    ? [...result.layer_results].sort((a, b) => b.score - a.score)
+    ? [...result.layer_results].sort(
+        (a, b) =>
+          (b.weighted_contribution ?? b.score) -
+            (a.weighted_contribution ?? a.score) ||
+          b.score - a.score
+      )
     : [];
+  const groupedLayers = {
+    core: sortedLayers.filter((layer) => layer.score_role === "core-score"),
+    supporting: sortedLayers.filter((layer) => layer.score_role === "supporting-score"),
+    other: sortedLayers.filter((layer) => layer.score_role === "other-layer"),
+  };
+  const layerSections = [
+    { key: "core", title: "Core Scoring Backbone", layers: groupedLayers.core },
+    { key: "supporting", title: "Supporting Score Layers", layers: groupedLayers.supporting },
+    { key: "other", title: "Other Layers", layers: groupedLayers.other },
+  ];
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
@@ -53,8 +72,8 @@ export default function Home() {
           🛡️ AI Fraud Detector
         </h1>
         <p className="text-[#a0a0a0] mt-2">
-          21-layer deep analysis pipeline for detecting AI-generated fraudulent
-          images
+          Core scoring backbone plus grouped 21-layer evidence for
+          AI-generated fraudulent images
         </p>
       </div>
 
@@ -143,6 +162,75 @@ export default function Home() {
             <RiskGauge score={result.risk_score} tier={result.risk_tier} />
           </div>
 
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#777]">
+                Score Path
+              </div>
+              <p className="mt-2 text-sm text-[#d6d6d6] leading-relaxed">
+                {result.scoring_summary.override_applied
+                  ? result.scoring_summary.override_reason
+                  : result.scoring_summary.consensus_floor_applied
+                    ? `Cross-family consensus (${result.scoring_summary.consensus_signal_families.map(formatFamily).join(" + ")}) raised the backbone score from ${scoreToPercent(result.scoring_summary.weighted_score)} to ${scoreToPercent(result.scoring_summary.final_score)}.`
+                    : `Backbone ensemble score: ${scoreToPercent(result.scoring_summary.weighted_score)}.`}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#777]">
+                Scoring Metadata
+              </div>
+              <div className="mt-2 space-y-2 text-sm text-[#d6d6d6]">
+                <div>
+                  <span className="text-[#888]">Method:</span>{" "}
+                  {result.scoring_summary.method}
+                </div>
+                <div>
+                  <span className="text-[#888]">Backbone layers:</span>{" "}
+                  {groupedLayers.core.length + groupedLayers.supporting.length}
+                </div>
+                <div>
+                  <span className="text-[#888]">Other layers:</span>{" "}
+                  {groupedLayers.other.length}
+                </div>
+                <div>
+                  <span className="text-[#888]">Version:</span>{" "}
+                  {result.scoring_summary.scoring_version}
+                </div>
+              </div>
+              {result.scoring_summary.scoring_notes.length > 0 && (
+                <ul className="mt-3 space-y-2 text-sm text-amber-100">
+                  {result.scoring_summary.scoring_notes.map((note, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-amber-400">•</span>
+                      <span>{note}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#777]">
+                Conflicting Signals
+              </div>
+              {result.scoring_summary.conflicting_signals.length > 0 ? (
+                <ul className="mt-2 space-y-2 text-sm text-[#d6d6d6]">
+                  {result.scoring_summary.conflicting_signals.map((signal, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-amber-400">•</span>
+                      <span>{signal}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-sm text-[#a0a0a0]">
+                  No strong contradictions surfaced for this run.
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* Hash Matches Warning */}
           {result.hash_matches.length > 0 && (
             <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-4">
@@ -165,24 +253,38 @@ export default function Home() {
             <h3 className="text-lg font-semibold mb-3">
               Layer-by-Layer Breakdown
             </h3>
-            <div className="space-y-2">
-              {sortedLayers.map((lr) => (
-                <LayerCard
-                  key={lr.layer}
-                  result={lr}
-                  elaHeatmap={
-                    lr.layer === "ela" ? result.ela_heatmap_b64 ?? undefined : undefined
-                  }
-                  truforHeatmap={
-                    lr.layer === "trufor" ? result.trufor_heatmap_b64 ?? undefined : undefined
-                  }
-                  geminiReasoning={
-                    lr.layer === "gemini"
-                      ? result.gemini_reasoning ?? undefined
-                      : undefined
-                  }
-                />
-              ))}
+            <div className="space-y-4">
+              {layerSections.map((section) =>
+                section.layers.length > 0 ? (
+                  <section key={section.key} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold uppercase tracking-wider text-[#9a9a9a]">
+                        {section.title}
+                      </h4>
+                      <span className="text-xs text-[#666]">
+                        {section.layers.length} layers
+                      </span>
+                    </div>
+                    {section.layers.map((lr) => (
+                      <LayerCard
+                        key={lr.layer}
+                        result={lr}
+                        elaHeatmap={
+                          lr.layer === "ela" ? result.ela_heatmap_b64 ?? undefined : undefined
+                        }
+                        truforHeatmap={
+                          lr.layer === "trufor" ? result.trufor_heatmap_b64 ?? undefined : undefined
+                        }
+                        geminiReasoning={
+                          lr.layer === "gemini"
+                            ? result.gemini_reasoning ?? undefined
+                            : undefined
+                        }
+                      />
+                    ))}
+                  </section>
+                ) : null
+              )}
             </div>
           </div>
         </div>
@@ -192,8 +294,7 @@ export default function Home() {
       <footer className="mt-12 text-center text-xs text-[#666] pb-8">
         <p>HackyIndy 2026 — AI Fraud Detection Pipeline</p>
         <p className="mt-1">
-          19 layers: EXIF · ELA · Hashing · FFT · C2PA · Behavioral · Vision AI ·
-          PRNU · CLIP · CNN · Watermark · TruFor · DIRE · Gradient · LSB · DCT · GAN · Attention · Texture
+          Grouped evidence model: core scoring backbone, supporting score layers, and other forensic checks across 21 layers.
         </p>
       </footer>
     </main>
