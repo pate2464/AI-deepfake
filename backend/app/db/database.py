@@ -42,7 +42,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(String(255), unique=True, index=True)
     device_fingerprint = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     flagged = Column(Boolean, default=False)
 
     claims = relationship("Claim", back_populates="account")
@@ -63,7 +63,7 @@ class Claim(Base):
     ela_heatmap_path = Column(String(1024), nullable=True)
     gemini_reasoning = Column(Text, nullable=True)
     processing_time_ms = Column(Integer, default=0)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     account = relationship("Account", back_populates="claims")
     image_hashes = relationship("ImageHash", back_populates="claim", uselist=False)
@@ -94,31 +94,38 @@ class HashMatchRecord(Base):
 
 # ── Helpers ────────────────────────────────────────────
 
+def _is_sqlite() -> bool:
+    return settings.DATABASE_URL.startswith("sqlite")
+
+
 async def init_db() -> None:
-    """Create tables and migrate SQLite columns; verify schema before serving traffic."""
+    """Create tables (and migrate SQLite columns if needed); verify schema."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        await _ensure_claim_columns(conn)
+        if _is_sqlite():
+            await _ensure_claim_columns_sqlite(conn)
 
     async with engine.connect() as conn:
-        row = (
-            await conn.execute(
-                text(
-                    "SELECT name FROM sqlite_master "
-                    "WHERE type='table' AND name='claims'"
-                )
+        if _is_sqlite():
+            check_query = text(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='claims'"
             )
-        ).first()
+        else:
+            check_query = text(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='public' AND tablename='claims'"
+            )
+        row = (await conn.execute(check_query)).first()
         if row is None:
             raise RuntimeError(
-                "SQLite schema init failed: `claims` table is missing after create_all. "
-                "Check DATABASE_URL and file permissions."
+                "Schema init failed: `claims` table is missing after create_all. "
+                "Check DATABASE_URL and permissions."
             )
 
     logger.info("Database ready: %s", settings.DATABASE_URL)
 
 
-async def _ensure_claim_columns(conn) -> None:
+async def _ensure_claim_columns_sqlite(conn) -> None:
     """Backfill new JSON columns for SQLite installs without migrations."""
     exists = (
         await conn.execute(
