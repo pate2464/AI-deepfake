@@ -45,8 +45,8 @@ jobs:
 
       - name: Log in to Vultr Container Registry
         run: |
-          echo "${{ secrets.VULTR_CR_PASS }}" | docker login "$VULTR_CR_HOST" \
-            -u "${{ secrets.VULTR_CR_USER }}" --password-stdin
+          mkdir -p ~/.docker
+          echo '${{ secrets.DOCKER_CONFIG_JSON }}' > ~/.docker/config.json
 
       - name: Build and push backend image
         run: |
@@ -86,8 +86,8 @@ jobs:
             export IMAGE_TAG=${{ github.sha }}
             export VULTR_CR_REPO=$VULTR_CR_REPO
 
-            echo "${{ secrets.VULTR_CR_PASS }}" | docker login "$VULTR_CR_HOST" \
-              -u "${{ secrets.VULTR_CR_USER }}" --password-stdin
+            mkdir -p ~/.docker
+            echo '${{ secrets.DOCKER_CONFIG_JSON }}' > ~/.docker/config.json
 
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
