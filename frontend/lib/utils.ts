@@ -23,29 +23,29 @@ export function riskBg(tier: "low" | "medium" | "high") {
 
 export function layerLabel(layer: string): string {
   const labels: Record<string, string> = {
-    exif: "EXIF Metadata",
-    ela: "Error Level Analysis",
-    hash: "Perceptual Hashing",
-    ai_model: "AI Model Detection",
-    c2pa: "C2PA Provenance",
-    behavioral: "Behavioral Scoring",
-    gemini: "Vision AI (Local)",
-    noise: "Noise / PRNU",
-    clip_detect: "CLIP Fake Detect",
-    cnn_detect: "CNN Fingerprint",
-    watermark: "Invisible Watermark",
-    trufor: "TruFor Localisation",
-    dire: "DIRE Reconstruction",
-    gradient: "Gradient Distribution",
-    lsb: "LSB Forensics",
-    dct_hist: "DCT Histogram",
-    gan_fingerprint: "GAN Spectral Fingerprint",
-    attention_pattern: "Attention Pattern",
-    texture: "Texture Analysis",
-    npr: "NPR Pixel Residuals",
-    mlep: "MLEP Entropy",
+    exif: "File & camera metadata",
+    ela: "Compression consistency",
+    hash: "Visual fingerprint match",
+    ai_model: "AI-model pattern cues",
+    c2pa: "Content credentials (C2PA)",
+    behavioral: "Behavior context",
+    gemini: "Vision model (AI explanation)",
+    noise: "Sensor noise pattern",
+    clip_detect: "Semantic pattern check",
+    cnn_detect: "Neural fingerprint",
+    watermark: "Watermark detection",
+    trufor: "Edit-region estimate",
+    dire: "Reconstruction realism",
+    gradient: "Edge & gradient distribution",
+    lsb: "Hidden data pattern",
+    dct_hist: "Frequency pattern",
+    gan_fingerprint: "GAN-style spectrum",
+    attention_pattern: "Attention pattern",
+    texture: "Texture consistency",
+    npr: "Pixel residual noise",
+    mlep: "Entropy pattern",
   };
-  return labels[layer] || layer;
+  return labels[layer] || layer.replace(/_/g, " ");
 }
 
 export function layerIcon(layer: string): string {

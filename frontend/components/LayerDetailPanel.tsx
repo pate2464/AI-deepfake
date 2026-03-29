@@ -42,9 +42,9 @@ function formatDetailValue(value: unknown): string {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  "core-score": "Core scoring layer",
-  "supporting-score": "Supporting signal",
-  "other-layer": "Other forensic layer",
+  "core-score": "Primary factor",
+  "supporting-score": "Supporting check",
+  "other-layer": "Additional check",
 };
 
 const ROLE_BADGES: Record<string, string> = {
@@ -63,14 +63,12 @@ export default function LayerDetailPanel({
     return (
       <div className="flex min-h-[320px] items-center justify-center rounded-[28px] panel-muted px-6 py-8 text-center xl:min-h-0">
         <div className="max-w-sm">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-            Layer detail
-          </div>
+          <div className="text-xs font-medium text-[var(--text-muted-strong)]">Check details</div>
           <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
-            Select a layer to inspect its evidence.
+            Pick a check on the left
           </h3>
           <p className="mt-3 text-sm leading-6 text-[#9d9d9d]">
-            The detail pane is reserved for one layer at a time so the evidence stays readable without turning into a vertical stack of accordions.
+            We show one check at a time so scores, notes, and visuals stay easy to read.
           </p>
         </div>
       </div>
@@ -117,9 +115,7 @@ export default function LayerDetailPanel({
           </div>
 
           <div className="shrink-0 rounded-[24px] border border-white/10 bg-black/10 px-4 py-3 text-right">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-              Suspicion score
-            </div>
+            <div className="text-xs font-medium text-[var(--text-muted-strong)]">Signal strength</div>
             <div className={cn("mt-2 text-3xl font-semibold", riskColor(tier))}>
               {scoreToPercent(result.score)}
             </div>
@@ -132,7 +128,7 @@ export default function LayerDetailPanel({
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               <ShieldAlert className="h-3.5 w-3.5" />
-              Family
+              Signal family
             </div>
             <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
               {result.evidence_family ?? "Unknown"}
@@ -141,7 +137,7 @@ export default function LayerDetailPanel({
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               <Sigma className="h-3.5 w-3.5" />
-              Confidence
+              How sure (this check)
             </div>
             <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
               {scoreToPercent(result.confidence)}%
@@ -150,7 +146,7 @@ export default function LayerDetailPanel({
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               <Scale className="h-3.5 w-3.5" />
-              Weight
+              Configured weight
             </div>
             <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
               {formatPercent(result.configured_weight)}
@@ -159,7 +155,7 @@ export default function LayerDetailPanel({
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               <Sigma className="h-3.5 w-3.5" />
-              Contribution
+              Impact on score
             </div>
             <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
               {formatPercent(result.weighted_contribution)}
@@ -168,7 +164,7 @@ export default function LayerDetailPanel({
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               <Clock3 className="h-3.5 w-3.5" />
-              Runtime
+              Check duration
             </div>
             <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
               {result.duration_ms !== undefined ? `${result.duration_ms}ms` : "-"}
@@ -194,7 +190,7 @@ export default function LayerDetailPanel({
         {result.flags.length > 0 ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-              Findings
+              What we noticed
             </div>
             <ul className="mt-3 grid gap-2 md:grid-cols-2">
               {result.flags.map((flag, index) => (
@@ -209,7 +205,7 @@ export default function LayerDetailPanel({
         {detailEntries.length > 0 ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-              Layer details
+              Raw fields
             </div>
             <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(168px,1fr))]">
               {detailEntries.map(([key, value]) => (
@@ -229,7 +225,7 @@ export default function LayerDetailPanel({
         {result.layer === "ela" && elaHeatmap ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-              ELA heatmap
+              Compression difference map
             </div>
             <img
               src={`data:image/png;base64,${elaHeatmap}`}
@@ -245,7 +241,7 @@ export default function LayerDetailPanel({
         {result.layer === "trufor" && truforHeatmap ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-              Manipulation localisation map
+              Possible edit regions
             </div>
             <img
               src={`data:image/png;base64,${truforHeatmap}`}
@@ -261,7 +257,7 @@ export default function LayerDetailPanel({
         {result.layer === "gemini" && (geminiReasoning || result.details?.template_like_output) ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
-              Gemini reasoning
+              AI-generated interpretation
             </div>
             <div className="mt-3 rounded-[22px] border border-white/8 bg-black/10 px-4 py-4 text-sm leading-7 text-[#dedede] break-words [overflow-wrap:anywhere]">
               {geminiReasoning || "Local VLM output resembled a copied template, so free-text reasoning was suppressed for this run."}
@@ -286,7 +282,7 @@ export default function LayerDetailPanel({
           <div className="rounded-[24px] border border-red-900/50 bg-red-950/20 px-4 py-4 text-sm leading-6 text-red-100">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-200/70">
               <AlertTriangle className="h-3.5 w-3.5" />
-              Layer error
+              Check error
             </div>
             <div className="mt-2 break-words [overflow-wrap:anywhere]">{result.error}</div>
           </div>

@@ -26,15 +26,15 @@ export default function RiskGauge({
   }[tier];
 
   const tierLabel = {
-    low: "LOW RISK",
-    medium: "MEDIUM RISK",
-    high: "HIGH RISK",
+    low: "Lower concern",
+    medium: "Moderate concern",
+    high: "Elevated concern",
   }[tier];
 
   const tierAction = {
-    low: "Auto-approve",
-    medium: "Human review",
-    high: "Auto-reject",
+    low: "Usually fine to move on",
+    medium: "Consider a closer look",
+    high: "Prioritize manual review",
   }[tier];
 
   return (

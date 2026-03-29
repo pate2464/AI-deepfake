@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import type { LayerResult } from "@/lib/api";
+import { ROLE_LABELS_SHORT } from "@/lib/copy";
 import { cn, layerIcon, layerLabel, riskColor, scoreToPercent } from "@/lib/utils";
 
 interface LayerListItemProps {
@@ -10,12 +11,6 @@ interface LayerListItemProps {
   onSelect: () => void;
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  "core-score": "Core",
-  "supporting-score": "Supporting",
-  "other-layer": "Other",
-};
-
 export default function LayerListItem({
   result,
   isActive,
@@ -23,7 +18,7 @@ export default function LayerListItem({
 }: LayerListItemProps) {
   const tier =
     result.score >= 0.6 ? "high" : result.score >= 0.3 ? "medium" : "low";
-  const roleLabel = ROLE_LABELS[result.score_role ?? "supporting-score"] ?? "Layer";
+  const roleLabel = ROLE_LABELS_SHORT[result.score_role ?? "supporting-score"] ?? "Check";
   const headline = result.suppression_reason || result.flags[0] || "No notable flags emitted.";
 
   return (
@@ -74,7 +69,7 @@ export default function LayerListItem({
             style={{ width: `${scoreToPercent(result.score)}%` }}
           />
         </div>
-        <span className={cn("w-11 text-right text-sm font-semibold", riskColor(tier))}>
+        <span className={cn("w-14 text-right text-sm font-semibold tabular-nums", riskColor(tier))}>
           {scoreToPercent(result.score)}
         </span>
       </div>
