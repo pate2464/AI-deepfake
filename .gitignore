@@ -10,3 +10,6 @@ node_modules/
 frontend/.next/
 frontend/node_modules/
 .DS_Store
+# local ssh keys (do not commit)
+vultrkey
+vultrkey.pub

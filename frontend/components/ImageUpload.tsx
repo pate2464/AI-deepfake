@@ -85,8 +85,8 @@ export default function ImageUpload({
         {...getRootProps()}
         className={cn(
           "group flex h-full min-h-[320px] cursor-pointer flex-col rounded-[26px] border border-dashed border-white/10 bg-black/10 p-4 transition duration-300 md:min-h-[360px]",
-          isDragActive && "border-white/25 bg-white/[0.04]",
-          !isAnalyzing && "hover:border-white/20 hover:bg-white/[0.03]",
+          isDragActive && "border-brand-400/60 bg-brand-400/[0.06]",
+          !isAnalyzing && "hover:border-brand-400/35 hover:bg-white/[0.03]",
           isAnalyzing && "cursor-progress"
         )}
       >
@@ -99,12 +99,12 @@ export default function ImageUpload({
               {selectedFile ? "Preview for review" : "Drop or choose a file"}
             </h2>
           </div>
-          <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-[#cbcbcb]">
+          <div className="rounded-full border border-brand-400/25 bg-brand-400/10 px-3 py-1 text-xs font-medium text-[#d6f3ff]">
             {selectedFile ? "Replace" : "Upload"}
           </div>
         </div>
 
-        <div className="relative mt-4 flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.12))] p-4 md:min-h-[300px]">
+        <div className="relative mt-4 flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.10),_transparent_55%),radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.12))] p-4 md:min-h-[300px]">
           {previewUrl && selectedFile ? (
             canRenderPreview ? (
               <img
