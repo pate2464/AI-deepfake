@@ -19,6 +19,7 @@ from app.core.models import (
 )
 from app.db.database import Claim, get_session
 from app.engine.pipeline import run_pipeline
+from app.storage.object_storage import put_bytes
 
 router = APIRouter()
 
@@ -66,6 +67,15 @@ async def analyze_image(
     with open(save_path, "wb") as f:
         f.write(contents)
 
+    stored_ref: str | None = None
+    if settings.OBJECT_STORAGE_ENABLED:
+        key = f"{settings.OBJECT_STORAGE_PREFIX.strip('/')}/{safe_filename}"
+        try:
+            stored_ref = await put_bytes(key=key, data=contents, filename=file.filename or safe_filename)
+        except Exception:
+            # Object storage should not block the analysis path.
+            stored_ref = None
+
     # Build context
     context = AnalysisContext(
         account_id=account_id,
@@ -77,7 +87,13 @@ async def analyze_image(
     )
 
     # Run pipeline
-    result = await run_pipeline(save_path, file.filename or safe_filename, context, session)
+    result = await run_pipeline(
+        save_path,
+        file.filename or safe_filename,
+        context,
+        session,
+        stored_image_ref=stored_ref,
+    )
     return result
 
 

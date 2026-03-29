@@ -137,6 +137,8 @@ async def run_pipeline(
     filename: str,
     context: AnalysisContext,
     session: AsyncSession,
+    *,
+    stored_image_ref: str | None = None,
 ) -> AnalysisResponse:
     """Execute the full 21-layer detection pipeline."""
     start = time.monotonic()
@@ -147,7 +149,7 @@ async def run_pipeline(
     # ── Create Claim record first (need ID for hash lookups) ──
     claim = Claim(
         filename=filename,
-        image_path=image_path,
+        image_path=stored_image_ref or image_path,
     )
     session.add(claim)
     await session.flush()  # Get claim.id

@@ -36,5 +36,8 @@ c2pa-python==0.30.0
 sqlalchemy[asyncio]==2.0.35
 aiosqlite==0.20.0
 
+# Object storage (S3-compatible, e.g. Vultr)
+boto3==1.35.36
+
 # EXIF
 exifread==3.0.0
