@@ -45,10 +45,12 @@ if (Test-LocalPortInUse 8000) {
     Write-Host "Backend already listening at http://127.0.0.1:8000"
 }
 else {
-    Start-Process powershell -WorkingDirectory $repoRoot -ArgumentList @(
+    # WorkingDirectory must be backend/: uvicorn drops --reload-dir when cwd is the
+    # repo root (parent of backend/), then watches the whole tree including .venv.
+    Start-Process powershell -WorkingDirectory $backendDir -ArgumentList @(
         "-NoExit",
         "-Command",
-        "& '$pythonExe' -m uvicorn app.main:app --app-dir '$backendDir' --host 127.0.0.1 --port 8000 --reload"
+        "& '$pythonExe' -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
     ) | Out-Null
 
     Write-Host "Backend window started at http://127.0.0.1:8000"

@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    text,
 )
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -93,14 +94,42 @@ class HashMatchRecord(Base):
 
 # ── Helpers ────────────────────────────────────────────
 
-async def init_db():
+async def init_db() -> None:
+    """Create tables and migrate SQLite columns; verify schema before serving traffic."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         await _ensure_claim_columns(conn)
 
+    async with engine.connect() as conn:
+        row = (
+            await conn.execute(
+                text(
+                    "SELECT name FROM sqlite_master "
+                    "WHERE type='table' AND name='claims'"
+                )
+            )
+        ).first()
+        if row is None:
+            raise RuntimeError(
+                "SQLite schema init failed: `claims` table is missing after create_all. "
+                "Check DATABASE_URL and file permissions."
+            )
+
+    logger.info("Database ready: %s", settings.DATABASE_URL)
+
 
 async def _ensure_claim_columns(conn) -> None:
     """Backfill new JSON columns for SQLite installs without migrations."""
+    exists = (
+        await conn.execute(
+            text(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='claims' LIMIT 1"
+            )
+        )
+    ).first()
+    if exists is None:
+        return
+
     result = await conn.exec_driver_sql("PRAGMA table_info(claims)")
     existing_columns = {row[1] for row in result.fetchall()}
     required_columns = {

@@ -335,13 +335,26 @@ You need TWO terminals open — one for backend, one for frontend.
     .venv\Scripts\Activate.ps1               # Activate virtualenv (Windows)
     # source .venv/bin/activate               # (macOS/Linux)
 
-    python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --app-dir backend
+    cd backend
+    python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+    macOS/Linux shortcut from repo root (same effect):  ./run-backend-dev.sh
 
     You should see:
       INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
       INFO:     Started reloader process [...]
+      INFO:     Will watch for changes in these directories: ['.../backend']
 
     The --reload flag enables hot-reloading (auto-restarts on code changes).
+
+    IMPORTANT (why your friend on Windows might not have seen this):
+    Run the server with current directory = backend/ (as above). If you instead
+    run from the repo root with --app-dir backend, Uvicorn 0.30's WatchFiles
+    reloader drops your --reload-dir and falls back to watching the ENTIRE repo
+    root — including .venv. During /analyze, Python loads PIL/torch/etc. under
+    site-packages; those files look "changed" and the server reloads mid-request,
+    causing Internal Server Error / socket hang up. This is not a Mac vs Windows
+    code difference — it is the dev server's working directory + Uvicorn behavior.
 
     API docs available at: http://localhost:8000/docs (Swagger UI)
     Alternative docs:      http://localhost:8000/redoc
@@ -596,8 +609,8 @@ Layer  Name              Weight   What It Does
 
 PROBLEM: "ModuleNotFoundError: No module named 'app'"
   CAUSE:  Running uvicorn from wrong directory.
-  FIX:    Use --app-dir flag:
-          python -m uvicorn app.main:app --app-dir backend
+  FIX:    Prefer: cd backend && python -m uvicorn app.main:app ...
+          Or from repo root only: python -m uvicorn app.main:app --app-dir backend
 
 PROBLEM: "CUDA not available" / torch.cuda.is_available() = False
   CAUSE:  Wrong PyTorch version installed (CPU-only).
@@ -610,7 +623,15 @@ PROBLEM: "Port 8000 already in use"
           Windows:  netstat -ano | findstr :8000
                     taskkill /PID <pid> /F
           Or use a different port:
-          python -m uvicorn app.main:app --port 8001 --app-dir backend
+          cd backend
+          python -m uvicorn app.main:app --port 8001 --reload
+
+PROBLEM: Internal Server Error, or frontend proxy "socket hang up" / ECONNRESET
+          on /api/v1/analyze
+  CAUSE:  Backend started from repo root with --app-dir backend so Uvicorn watched
+          .venv; imports during analysis triggered a reload and killed the request.
+  FIX:    Start the backend with cwd = backend/ (section 8): `cd backend` then
+          uvicorn, or ./run-backend-dev.sh. Or omit --reload for maximum stability.
 
 PROBLEM: "Port 3000 already in use"
   INFO:   Next.js auto-picks the next available port (3001, 3002, etc.)
@@ -706,7 +727,8 @@ PROBLEM: Database is corrupted
   # Terminal 1 (Backend):
   cd C:\Users\g18g1\AI-deepfake
   .venv\Scripts\Activate.ps1
-  python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --app-dir backend
+  cd backend
+  python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # Terminal 2 (Frontend):
   cd C:\Users\g18g1\AI-deepfake\frontend
