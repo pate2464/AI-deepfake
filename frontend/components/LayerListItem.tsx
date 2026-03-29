@@ -27,44 +27,44 @@ export default function LayerListItem({
       className={cn(
         "w-full rounded-[24px] border px-4 py-4 text-left transition",
         isActive
-          ? "selection-glow border-white/18 bg-white/[0.06]"
-          : "border-white/10 bg-black/10 hover:border-white/18 hover:bg-white/[0.04]"
+          ? "selection-glow border-[rgba(145,172,154,0.34)] bg-[rgba(169,195,182,0.34)]"
+          : "border-[rgba(145,172,154,0.22)] bg-[rgba(237,244,241,0.84)] hover:border-[rgba(145,172,154,0.34)] hover:bg-[rgba(206,223,223,0.58)]"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-lg">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(145,172,154,0.14)] bg-white/[0.36] text-lg">
               {layerIcon(result.layer)}
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-start gap-2">
-                <h4 className="min-w-0 flex-1 text-sm font-semibold leading-5 text-white">
+                <h4 className="min-w-0 flex-1 text-sm font-semibold leading-5 text-[var(--text-primary)]">
                   {layerLabel(result.layer)}
                 </h4>
-                <span className="shrink-0 rounded-full border border-white/10 bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#bdbdbd]">
+                <span className="shrink-0 rounded-full border border-[rgba(145,172,154,0.18)] bg-[rgba(169,195,182,0.18)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                   {roleLabel}
                 </span>
               </div>
-              <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#9b9b9b]">
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--text-soft)]">
                 {headline}
               </p>
             </div>
           </div>
         </div>
-        <ChevronRight className={cn("mt-1 h-4 w-4 shrink-0 text-[#7f7f7f] transition", isActive && "translate-x-0.5 text-white")} />
+        <ChevronRight className={cn("mt-1 h-4 w-4 shrink-0 text-[var(--text-muted-strong)] transition", isActive && "translate-x-0.5 text-[var(--text-primary)]")} />
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[rgba(145,172,154,0.16)]">
           <div
             className={cn(
               "h-full rounded-full",
               tier === "high"
-                ? "bg-red-500"
+                ? "bg-[#A9C3B6]"
                 : tier === "medium"
-                  ? "bg-amber-500"
-                  : "bg-green-500"
+                  ? "bg-[#91AC9A]"
+                  : "bg-[#8FB8CA]"
             )}
             style={{ width: `${scoreToPercent(result.score)}%` }}
           />

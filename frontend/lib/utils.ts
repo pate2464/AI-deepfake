@@ -7,17 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 
 export function riskColor(tier: "low" | "medium" | "high") {
   return {
-    low: "text-green-500",
-    medium: "text-amber-500",
-    high: "text-red-500",
+    low: "text-[#8fb8ca]",
+    medium: "text-[#91ac9a]",
+    high: "text-[#6c8277]",
   }[tier];
 }
 
 export function riskBg(tier: "low" | "medium" | "high") {
   return {
-    low: "bg-green-500/10 border-green-500/30",
-    medium: "bg-amber-500/10 border-amber-500/30",
-    high: "bg-red-500/10 border-red-500/30",
+    low: "bg-[#cedfdf]/76 border-[#b7d1d3]",
+    medium: "bg-[#b7d1d3]/34 border-[#a6c3ce]",
+    high: "bg-[#a9c3b6]/28 border-[#91ac9a]",
   }[tier];
 }
 
