@@ -27,14 +27,14 @@ export default function LayerListItem({
       className={cn(
         "w-full rounded-[24px] border px-4 py-4 text-left transition",
         isActive
-          ? "selection-glow border-[rgba(73,118,159,0.34)] bg-[rgba(123,189,232,0.34)]"
-          : "border-[rgba(73,118,159,0.22)] bg-[rgba(235,246,252,0.84)] hover:border-[rgba(73,118,159,0.34)] hover:bg-[rgba(189,216,233,0.56)]"
+          ? "selection-glow border-[rgba(145,172,154,0.34)] bg-[rgba(169,195,182,0.34)]"
+          : "border-[rgba(145,172,154,0.22)] bg-[rgba(237,244,241,0.84)] hover:border-[rgba(145,172,154,0.34)] hover:bg-[rgba(206,223,223,0.58)]"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(73,118,159,0.14)] bg-white/[0.36] text-lg">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(145,172,154,0.14)] bg-white/[0.36] text-lg">
               {layerIcon(result.layer)}
             </span>
             <div className="min-w-0 flex-1">
@@ -42,7 +42,7 @@ export default function LayerListItem({
                 <h4 className="min-w-0 flex-1 text-sm font-semibold leading-5 text-[var(--text-primary)]">
                   {layerLabel(result.layer)}
                 </h4>
-                <span className="shrink-0 rounded-full border border-[rgba(73,118,159,0.18)] bg-[rgba(123,189,232,0.16)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+                <span className="shrink-0 rounded-full border border-[rgba(145,172,154,0.18)] bg-[rgba(169,195,182,0.18)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                   {roleLabel}
                 </span>
               </div>
@@ -56,15 +56,15 @@ export default function LayerListItem({
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[rgba(73,118,159,0.14)]">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[rgba(145,172,154,0.16)]">
           <div
             className={cn(
               "h-full rounded-full",
               tier === "high"
-                ? "bg-[#6EA2B3]"
+                ? "bg-[#A9C3B6]"
                 : tier === "medium"
-                  ? "bg-[#49769F]"
-                  : "bg-[#4E8EA2]"
+                  ? "bg-[#91AC9A]"
+                  : "bg-[#8FB8CA]"
             )}
             style={{ width: `${scoreToPercent(result.score)}%` }}
           />

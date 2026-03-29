@@ -20,9 +20,9 @@ export default function RiskGauge({
   const offset = circumference - (score * circumference);
 
   const strokeColor = {
-    low: "#4E8EA2",
-    medium: "#49769F",
-    high: "#6EA2B3",
+    low: "#8FB8CA",
+    medium: "#91AC9A",
+    high: "#A9C3B6",
   }[tier];
 
   const tierLabel = {
@@ -46,7 +46,7 @@ export default function RiskGauge({
             cy="50"
             r="45"
             fill="none"
-            stroke="#BDD8E9"
+            stroke="#CEDFDF"
             strokeWidth="8"
           />
           <circle

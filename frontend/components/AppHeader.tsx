@@ -8,7 +8,7 @@ export default function AppHeader({ className }: { className?: string }) {
   return (
     <header
       className={cn(
-        "section-enter glass-highlight accent-orbit ambient-glow mb-6 flex flex-col gap-6 rounded-[28px] border border-white/[0.12] bg-[radial-gradient(circle_at_top_left,rgba(123,189,232,0.26),transparent_52%),radial-gradient(circle_at_top_right,rgba(110,162,179,0.2),transparent_45%),radial-gradient(circle_at_72%_18%,rgba(189,216,233,0.22),transparent_42%),var(--surface-hero)] px-5 py-6 md:flex-row md:items-center md:justify-between md:px-7",
+        "section-enter glass-highlight accent-orbit ambient-glow mb-6 flex flex-col gap-6 rounded-[28px] border border-white/[0.12] bg-[radial-gradient(circle_at_top_left,rgba(169,195,182,0.24),transparent_52%),radial-gradient(circle_at_top_right,rgba(166,195,206,0.2),transparent_45%),radial-gradient(circle_at_72%_18%,rgba(206,223,223,0.24),transparent_42%),var(--surface-hero)] px-5 py-6 md:flex-row md:items-center md:justify-between md:px-7",
         className
       )}
     >
@@ -26,7 +26,7 @@ export default function AppHeader({ className }: { className?: string }) {
         </p>
       </div>
       <div className="flex shrink-0 items-start gap-3 rounded-2xl border border-[var(--line-soft)] bg-[rgba(255,248,245,0.76)] px-4 py-3 backdrop-blur-sm md:max-w-xs">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(73,118,159,0.24)] bg-[radial-gradient(circle_at_top,rgba(123,189,232,0.34),rgba(255,255,255,0.14))] text-[var(--text-primary)]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(145,172,154,0.24)] bg-[radial-gradient(circle_at_top,rgba(169,195,182,0.32),rgba(255,255,255,0.14))] text-[var(--text-primary)]">
           <ImageIcon className="h-5 w-5 text-brand-100" aria-hidden />
         </span>
         <div className="text-sm leading-6 text-[var(--text-soft)]">

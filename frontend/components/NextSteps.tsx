@@ -25,7 +25,7 @@ export default function NextSteps({ onUploadAnother, className }: NextStepsProps
         <button
           type="button"
           onClick={onUploadAnother}
-          className="inline-flex items-center gap-2 rounded-full bg-[#49769F] px-4 py-2.5 text-sm font-semibold text-[var(--text-on-dark)] transition hover:bg-[#6EA2B3] hover:text-[var(--text-primary)]"
+          className="inline-flex items-center gap-2 rounded-full bg-[#91AC9A] px-4 py-2.5 text-sm font-semibold text-[var(--text-on-dark)] transition hover:bg-[#A9C3B6] hover:text-[var(--text-primary)]"
         >
           <ImagePlus className="h-4 w-4" aria-hidden />
           Upload another image

@@ -52,7 +52,7 @@ export default function EvidenceSummaryAccordions({
           return (
             <details
               key={key}
-              className="group rounded-[22px] border border-[rgba(73,118,159,0.18)] bg-[rgba(230,243,250,0.72)] open:border-[rgba(73,118,159,0.28)] open:bg-[rgba(123,189,232,0.28)]"
+              className="group rounded-[22px] border border-[rgba(145,172,154,0.18)] bg-[rgba(237,244,241,0.72)] open:border-[rgba(145,172,154,0.28)] open:bg-[rgba(169,195,182,0.28)]"
             >
               <summary
                 className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-left [&::-webkit-details-marker]:hidden"
@@ -67,7 +67,7 @@ export default function EvidenceSummaryAccordions({
                 </div>
                 <ChevronDown className="h-5 w-5 shrink-0 text-[var(--text-muted-strong)] transition group-open:rotate-180" aria-hidden />
               </summary>
-              <div id={panelId} className="border-t border-[rgba(73,118,159,0.12)] px-4 pb-4 pt-0">
+              <div id={panelId} className="border-t border-[rgba(145,172,154,0.12)] px-4 pb-4 pt-0">
                 {layers.length === 0 ? (
                   <p className="pt-3 text-sm text-[var(--text-soft)]">Nothing in this group.</p>
                 ) : (

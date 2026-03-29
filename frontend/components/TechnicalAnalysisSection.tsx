@@ -49,7 +49,7 @@ export default function TechnicalAnalysisSection({
 
       {open ? (
         <div
-          className="border-t border-[rgba(73,118,159,0.12)] p-5 md:p-6"
+          className="border-t border-[rgba(145,172,154,0.12)] p-5 md:p-6"
           role="region"
           aria-labelledby="technical-analysis-toggle"
         >
@@ -60,7 +60,7 @@ export default function TechnicalAnalysisSection({
                 className={cn(
                   "rounded-[22px] px-4 py-4",
                   card.tone === "warning"
-                    ? "border border-[rgba(73,118,159,0.24)] bg-[rgba(123,189,232,0.18)]"
+                    ? "border border-[rgba(145,172,154,0.24)] bg-[rgba(169,195,182,0.18)]"
                     : "deep-panel"
                 )}
               >

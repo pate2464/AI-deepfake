@@ -13,7 +13,7 @@ export default function ReasonList({ reasons, onViewTechnical, className }: Reas
   return (
     <section className={cn("rounded-[24px] panel-muted px-5 py-5", className)}>
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[rgba(73,118,159,0.14)] bg-white/[0.34] text-[var(--text-primary)]">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[rgba(145,172,154,0.14)] bg-white/[0.34] text-[var(--text-primary)]">
           <ListOrdered className="h-4 w-4" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
@@ -24,7 +24,7 @@ export default function ReasonList({ reasons, onViewTechnical, className }: Reas
           <ul className="mt-4 grid gap-2.5 text-sm leading-7 text-[var(--text-primary)]">
             {reasons.map((reason, i) => (
               <li key={i} className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[rgba(10,65,116,0.5)]" aria-hidden />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[rgba(145,172,154,0.5)]" aria-hidden />
                 <span className="min-w-0 [overflow-wrap:anywhere]">{reason}</span>
               </li>
             ))}

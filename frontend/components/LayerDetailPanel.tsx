@@ -48,9 +48,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_BADGES: Record<string, string> = {
-  "core-score": "border-[rgba(10,65,116,0.2)] bg-[rgba(123,189,232,0.18)] text-[var(--text-primary)]",
-  "supporting-score": "border-[rgba(73,118,159,0.22)] bg-[rgba(110,162,179,0.16)] text-[var(--text-primary)]",
-  "other-layer": "border-[rgba(73,118,159,0.18)] bg-[rgba(189,216,233,0.22)] text-[var(--text-secondary)]",
+  "core-score": "border-[rgba(145,172,154,0.2)] bg-[rgba(169,195,182,0.18)] text-[var(--text-primary)]",
+  "supporting-score": "border-[rgba(166,195,206,0.22)] bg-[rgba(183,209,211,0.2)] text-[var(--text-primary)]",
+  "other-layer": "border-[rgba(169,195,182,0.18)] bg-[rgba(206,223,223,0.24)] text-[var(--text-secondary)]",
 };
 
 export default function LayerDetailPanel({
@@ -86,11 +86,11 @@ export default function LayerDetailPanel({
 
   return (
     <div className="flex min-h-[420px] flex-col rounded-[28px] panel-muted xl:min-h-0 xl:overflow-hidden">
-      <div className="border-b border-[rgba(73,118,159,0.14)] px-6 py-6">
+      <div className="border-b border-[rgba(145,172,154,0.14)] px-6 py-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(73,118,159,0.14)] bg-white/[0.4] text-xl">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(145,172,154,0.14)] bg-white/[0.4] text-xl">
                 {layerIcon(result.layer)}
               </span>
               <div className="min-w-0 flex-1">
@@ -102,7 +102,7 @@ export default function LayerDetailPanel({
                     {roleLabel}
                   </span>
                   {result.suppressed ? (
-                    <span className="shrink-0 rounded-full border border-[rgba(10,65,116,0.2)] bg-[rgba(123,189,232,0.2)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-primary)]">
+                    <span className="shrink-0 rounded-full border border-[rgba(145,172,154,0.2)] bg-[rgba(169,195,182,0.2)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-primary)]">
                       Guardrailed
                     </span>
                   ) : null}
@@ -182,7 +182,7 @@ export default function LayerDetailPanel({
         </div>
 
         {result.suppression_reason ? (
-          <div className="rounded-[24px] border border-[rgba(73,118,159,0.22)] bg-[rgba(123,189,232,0.18)] px-4 py-4 text-sm leading-6 text-[var(--text-primary)]">
+          <div className="rounded-[24px] border border-[rgba(145,172,154,0.22)] bg-[rgba(169,195,182,0.18)] px-4 py-4 text-sm leading-6 text-[var(--text-primary)]">
             {result.suppression_reason}
           </div>
         ) : null}
@@ -270,16 +270,16 @@ export default function LayerDetailPanel({
             <span className="break-words [overflow-wrap:anywhere]">Confidence bar</span>
             <span className="shrink-0">{scoreToPercent(result.confidence)}%</span>
           </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(73,118,159,0.14)]">
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(145,172,154,0.14)]">
             <div
-              className="h-full rounded-full bg-[rgba(10,65,116,0.62)]"
+              className="h-full rounded-full bg-[rgba(145,172,154,0.62)]"
               style={{ width: `${scoreToPercent(result.confidence)}%` }}
             />
           </div>
         </div>
 
         {result.error ? (
-          <div className="rounded-[24px] border border-[rgba(10,65,116,0.26)] bg-[rgba(123,189,232,0.22)] px-4 py-4 text-sm leading-6 text-[var(--text-primary)]">
+          <div className="rounded-[24px] border border-[rgba(166,195,206,0.26)] bg-[rgba(206,223,223,0.28)] px-4 py-4 text-sm leading-6 text-[var(--text-primary)]">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
               <AlertTriangle className="h-3.5 w-3.5" />
               Check error
