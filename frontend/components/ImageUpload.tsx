@@ -80,13 +80,13 @@ export default function ImageUpload({
     : "JPEG, PNG, WebP, HEIC, TIFF, AVIF, BMP up to 20MB";
 
   return (
-    <div className="rounded-[30px] panel-surface p-4 md:p-5 xl:shrink-0">
+    <div className="accent-orbit ambient-glow rounded-[30px] panel-surface p-4 md:p-5 xl:shrink-0">
       <div
         {...getRootProps()}
         className={cn(
-          "group flex h-full min-h-[320px] cursor-pointer flex-col rounded-[26px] border border-dashed border-white/10 bg-black/10 p-4 transition duration-300 md:min-h-[360px]",
-          isDragActive && "border-brand-400/60 bg-brand-400/[0.06]",
-          !isAnalyzing && "hover:border-brand-400/35 hover:bg-white/[0.03]",
+          "group flex h-full min-h-[320px] cursor-pointer flex-col rounded-[26px] border border-dashed border-white/20 bg-white/[0.03] p-4 transition duration-300 md:min-h-[360px]",
+          isDragActive && "border-brand-300/80 bg-brand-400/[0.10] shadow-[0_0_0_1px_rgba(241,181,181,0.4),0_0_28px_rgba(241,181,181,0.24)]",
+          !isAnalyzing && "hover:border-brand-300/45 hover:bg-white/[0.05]",
           isAnalyzing && "cursor-progress"
         )}
       >
@@ -104,7 +104,7 @@ export default function ImageUpload({
           </div>
         </div>
 
-        <div className="relative mt-4 flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.10),_transparent_55%),radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.12))] p-4 md:min-h-[300px]">
+        <div className="relative mt-4 flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/20 bg-[radial-gradient(circle_at_top_left,_rgba(241,181,181,0.24),_transparent_55%),radial-gradient(circle_at_top_right,_rgba(168,183,174,0.24),_transparent_50%),radial-gradient(circle_at_72%_26%,_rgba(255,237,220,0.24),_transparent_46%),radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(0,0,0,0.15))] p-4 md:min-h-[300px]">
           {previewUrl && selectedFile ? (
             canRenderPreview ? (
               <img

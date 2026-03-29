@@ -17,7 +17,7 @@ export default function RiskMeter({
 }: RiskMeterProps) {
   const pct = scoreToPercent(score);
   const barColor =
-    tier === "high" ? "bg-red-500" : tier === "medium" ? "bg-amber-500" : "bg-emerald-500";
+    tier === "high" ? "bg-[#d4949d]" : tier === "medium" ? "bg-[#8b7fac]" : "bg-[#5c63a4]";
 
   return (
     <div className={cn("w-full", className)}>
@@ -26,7 +26,7 @@ export default function RiskMeter({
         <span className={cn("font-semibold tabular-nums", riskColor(tier))}>{pct} / 100</span>
       </div>
       <div
-        className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/[0.08]"
+        className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#acb0cc]/50"
         role="meter"
         aria-valuemin={0}
         aria-valuemax={100}

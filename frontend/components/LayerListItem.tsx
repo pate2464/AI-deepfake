@@ -27,8 +27,8 @@ export default function LayerListItem({
       className={cn(
         "w-full rounded-[24px] border px-4 py-4 text-left transition",
         isActive
-          ? "selection-glow border-white/18 bg-white/[0.06]"
-          : "border-white/10 bg-black/10 hover:border-white/18 hover:bg-white/[0.04]"
+          ? "selection-glow border-[#a8b7ae]/70 bg-[#fff7f2]"
+          : "border-[#a8b7ae]/45 bg-[#f7f1ea] hover:border-[#93939b]/60 hover:bg-[#fff7f2]"
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -42,11 +42,11 @@ export default function LayerListItem({
                 <h4 className="min-w-0 flex-1 text-sm font-semibold leading-5 text-white">
                   {layerLabel(result.layer)}
                 </h4>
-                <span className="shrink-0 rounded-full border border-white/10 bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#bdbdbd]">
+                <span className="shrink-0 rounded-full border border-white/20 bg-[#2b2e35] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ffeddc]">
                   {roleLabel}
                 </span>
               </div>
-              <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#9b9b9b]">
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#dfe2db]">
                 {headline}
               </p>
             </div>

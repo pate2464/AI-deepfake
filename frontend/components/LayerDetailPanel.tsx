@@ -85,8 +85,8 @@ export default function LayerDetailPanel({
     ROLE_BADGES[result.score_role ?? "supporting-score"] ?? ROLE_BADGES["supporting-score"];
 
   return (
-    <div className="flex min-h-[320px] flex-col rounded-[28px] panel-muted xl:min-h-0 xl:overflow-hidden">
-      <div className="border-b border-white/8 px-5 py-5">
+    <div className="flex min-h-[420px] flex-col rounded-[28px] panel-muted xl:min-h-0 xl:overflow-hidden">
+      <div className="border-b border-white/15 px-6 py-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
@@ -107,14 +107,14 @@ export default function LayerDetailPanel({
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-2 break-words text-sm leading-6 text-[#a7a7a7] [overflow-wrap:anywhere]">
+                <p className="mt-2 break-words text-sm leading-6 text-[#d4ddef] [overflow-wrap:anywhere]">
                   {result.suppression_reason || result.flags[0] || "No noteworthy flags were emitted for this layer."}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="shrink-0 rounded-[24px] border border-white/10 bg-black/10 px-4 py-3 text-right">
+          <div className="shrink-0 rounded-[24px] border border-white/20 bg-[#2b2e35] px-4 py-3 text-right">
             <div className="text-xs font-medium text-[var(--text-muted-strong)]">Signal strength</div>
             <div className={cn("mt-2 text-3xl font-semibold", riskColor(tier))}>
               {scoreToPercent(result.score)}
@@ -123,8 +123,8 @@ export default function LayerDetailPanel({
         </div>
       </div>
 
-      <div className="flex-1 space-y-5 overflow-y-auto px-5 pb-8 pt-5">
-        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(112px,1fr))] lg:[grid-template-columns:repeat(auto-fit,minmax(126px,1fr))]">
+      <div className="flex-1 space-y-5 overflow-y-auto px-6 pb-8 pt-6">
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               <ShieldAlert className="h-3.5 w-3.5" />
@@ -194,7 +194,7 @@ export default function LayerDetailPanel({
             </div>
             <ul className="mt-3 grid gap-2 md:grid-cols-2">
               {result.flags.map((flag, index) => (
-                <li key={`${flag}-${index}`} className="rounded-2xl border border-white/8 bg-black/10 px-3 py-3 text-sm leading-6 text-[#dedede] break-words [overflow-wrap:anywhere]">
+                <li key={`${flag}-${index}`} className="rounded-2xl border border-white/15 bg-[#2b2e35] px-3 py-3 text-sm leading-6 text-[#ffeddc] break-words [overflow-wrap:anywhere]">
                   {flag}
                 </li>
               ))}
@@ -209,11 +209,11 @@ export default function LayerDetailPanel({
             </div>
             <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(168px,1fr))]">
               {detailEntries.map(([key, value]) => (
-                <div key={key} className="min-w-0 rounded-2xl border border-white/8 bg-black/10 px-3 py-3">
+                <div key={key} className="min-w-0 rounded-2xl border border-white/15 bg-[#2b2e35] px-3 py-3">
                   <div className="break-words text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7f7f7f] [overflow-wrap:anywhere]">
                     {key.replace(/_/g, " ")}
                   </div>
-                  <div className="mt-2 break-words text-sm leading-6 text-[#e0e0e0] [overflow-wrap:anywhere]">
+                  <div className="mt-2 break-words text-sm leading-6 text-[#ffeddc] [overflow-wrap:anywhere]">
                     {formatDetailValue(value)}
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function LayerDetailPanel({
               alt="ELA heatmap"
               className="mt-3 w-full rounded-[22px] border border-white/8"
             />
-            <p className="mt-3 text-sm leading-6 text-[#a2a2a2]">
+            <p className="mt-3 text-sm leading-6 text-[#cfd9ed]">
               Bright areas indicate stronger compression error. Uniform brightness across large regions can align with synthetic generation.
             </p>
           </section>
@@ -248,7 +248,7 @@ export default function LayerDetailPanel({
               alt="TruFor manipulation heatmap"
               className="mt-3 w-full rounded-[22px] border border-white/8"
             />
-            <p className="mt-3 text-sm leading-6 text-[#a2a2a2]">
+            <p className="mt-3 text-sm leading-6 text-[#cfd9ed]">
               Warm regions indicate a higher probability of pixel-level manipulation, while cool regions are more likely authentic.
             </p>
           </section>
@@ -259,7 +259,7 @@ export default function LayerDetailPanel({
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
               AI-generated interpretation
             </div>
-            <div className="mt-3 rounded-[22px] border border-white/8 bg-black/10 px-4 py-4 text-sm leading-7 text-[#dedede] break-words [overflow-wrap:anywhere]">
+            <div className="mt-3 rounded-[22px] border border-white/15 bg-[#2b2e35] px-4 py-4 text-sm leading-7 text-[#ffeddc] break-words [overflow-wrap:anywhere]">
               {geminiReasoning || "Local VLM output resembled a copied template, so free-text reasoning was suppressed for this run."}
             </div>
           </section>

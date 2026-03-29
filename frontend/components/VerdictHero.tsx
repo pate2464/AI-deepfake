@@ -27,26 +27,26 @@ export default function VerdictHero({ result, className }: VerdictHeroProps) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-[var(--text-secondary)]">Screening results</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white md:text-3xl">
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#2f3340] md:text-3xl">
             {tierVerdictHeadline(result.risk_tier)}
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#b8b8b8]">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#5e6572]">
             {tierVerdictSubtext(result.risk_tier)}
           </p>
 
           <div className="mt-6 space-y-4">
             <RiskMeter score={result.risk_score} tier={result.risk_tier} />
-            <div className="rounded-2xl border border-white/[0.08] bg-black/20 px-4 py-3">
+            <div className="rounded-2xl border border-[#a8b7ae]/40 bg-[#fff7f2] px-4 py-3">
               <p className="text-xs font-medium text-[var(--text-muted-strong)]">
                 How confident we are in this summary
               </p>
-              <p className="mt-1 text-sm text-white">
+              <p className="mt-1 text-sm text-[#2f3340]">
                 <span className="font-semibold">{conf.label}</span>
-                <span className="text-[#b0b0b0]"> — {conf.detail}</span>
+                <span className="text-[#6f7683]"> — {conf.detail}</span>
               </p>
             </div>
-            <p className="text-xs leading-5 text-[#8a8a8a]">
-              Overall band: <span className="font-medium text-[#c8c8c8]">{tierLabelPlain(result.risk_tier)}</span>
+            <p className="text-xs leading-5 text-[#6f7683]">
+              Overall band: <span className="font-medium text-[#4f5562]">{tierLabelPlain(result.risk_tier)}</span>
               {" · "}
               This tool uses automated and AI-assisted checks. Results can be wrong—use alongside human judgment.
             </p>
