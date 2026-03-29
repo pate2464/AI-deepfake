@@ -1,0 +1,95 @@
+name: Deploy to Vultr
+
+on:
+  push:
+    branches: [main]
+
+env:
+  VULTR_CR_HOST: ord.vultrcr.com
+  VULTR_CR_REPO: ord.vultrcr.com/hackindy
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Backend lint
+        run: |
+          pip install ruff
+          ruff check backend/
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Vultr Container Registry
+        run: |
+          echo "${{ secrets.VULTR_CR_PASS }}" | docker login "$VULTR_CR_HOST" \
+            -u "${{ secrets.VULTR_CR_USER }}" --password-stdin
+
+      - name: Build and push backend image
+        run: |
+          docker build \
+            -t "$VULTR_CR_REPO/backend:${{ github.sha }}" \
+            -t "$VULTR_CR_REPO/backend:latest" \
+            backend/
+          docker push "$VULTR_CR_REPO/backend:${{ github.sha }}"
+          docker push "$VULTR_CR_REPO/backend:latest"
+
+      - name: Build and push frontend image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL="/api/v1" \
+            -t "$VULTR_CR_REPO/frontend:${{ github.sha }}" \
+            -t "$VULTR_CR_REPO/frontend:latest" \
+            frontend/
+          docker push "$VULTR_CR_REPO/frontend:${{ github.sha }}"
+          docker push "$VULTR_CR_REPO/frontend:latest"
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vultr VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VULTR_VPS_IP }}
+          username: root
+          key: ${{ secrets.VULTR_SSH_KEY }}
+          envs: VULTR_CR_HOST,VULTR_CR_REPO
+          script: |
+            cd /opt/ai-deepfake
+
+            export IMAGE_TAG=${{ github.sha }}
+            export VULTR_CR_REPO=$VULTR_CR_REPO
+
+            echo "${{ secrets.VULTR_CR_PASS }}" | docker login "$VULTR_CR_HOST" \
+              -u "${{ secrets.VULTR_CR_USER }}" --password-stdin
+
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            docker image prune -f
