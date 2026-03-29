@@ -26,46 +26,46 @@ export default function TechnicalAnalysisSection({
   className,
 }: TechnicalAnalysisSectionProps) {
   return (
-    <section className={cn("rounded-[28px] panel-muted p-1", className)}>
+    <section className={cn("rounded-[28px] panel-muted p-1.5", className)}>
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 rounded-[24px] px-4 py-4 text-left transition hover:bg-white/[0.04]"
+        className="flex w-full items-center justify-between gap-3 rounded-[24px] px-5 py-5 text-left transition hover:bg-white/[0.22]"
         aria-expanded={open}
         id="technical-analysis-toggle"
       >
         <div>
           <p className="text-xs font-medium text-[var(--text-muted-strong)]">For reviewers & analysts</p>
-          <h3 className="mt-1 text-lg font-semibold text-white">Technical analysis</h3>
-          <p className="mt-1 text-sm text-[#9a9a9a]">
+          <h3 className="mt-1 text-lg font-semibold text-[var(--text-primary)]">Technical analysis</h3>
+          <p className="mt-1 text-sm text-[var(--text-soft)]">
             Per-check scores, weights, heatmaps, metadata fields, and run diagnostics.
           </p>
         </div>
         <ChevronDown
-          className={cn("h-6 w-6 shrink-0 text-[#888] transition", open && "rotate-180")}
+          className={cn("h-6 w-6 shrink-0 text-[var(--text-muted-strong)] transition", open && "rotate-180")}
           aria-hidden
         />
       </button>
 
       {open ? (
         <div
-          className="border-t border-white/[0.06] p-4 md:p-5"
+          className="border-t border-[rgba(145,172,154,0.12)] p-5 md:p-6"
           role="region"
           aria-labelledby="technical-analysis-toggle"
         >
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 xl:grid-cols-3">
             {overviewCards.map((card) => (
               <div
                 key={card.title}
                 className={cn(
                   "rounded-[22px] px-4 py-4",
                   card.tone === "warning"
-                    ? "border border-amber-500/20 bg-amber-500/[0.07]"
-                    : "border border-white/[0.06] bg-black/20"
+                    ? "border border-[rgba(145,172,154,0.24)] bg-[rgba(169,195,182,0.18)]"
+                    : "deep-panel"
                 )}
               >
                 <div className="text-xs font-medium text-[var(--text-muted-strong)]">{card.title}</div>
-                <p className="mt-3 break-words text-sm leading-6 text-[#d4d4d4] [overflow-wrap:anywhere]">
+                <p className="mt-3 break-words text-sm leading-6 text-[var(--text-primary)] [overflow-wrap:anywhere]">
                   {card.body}
                 </p>
               </div>

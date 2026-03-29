@@ -26,9 +26,9 @@ export default function LayerCard({
     "other-layer": "Other",
   }[result.score_role ?? "supporting-score"];
   const roleBadgeClass = {
-    "core-score": "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-    "supporting-score": "border-sky-500/30 bg-sky-500/10 text-sky-300",
-    "other-layer": "border-zinc-500/30 bg-zinc-500/10 text-zinc-300",
+    "core-score": "border-[rgba(10,65,116,0.22)] bg-[rgba(123,189,232,0.18)] text-[var(--text-primary)]",
+    "supporting-score": "border-[rgba(73,118,159,0.22)] bg-[rgba(110,162,179,0.16)] text-[var(--text-primary)]",
+    "other-layer": "border-[rgba(73,118,159,0.18)] bg-[rgba(189,216,233,0.22)] text-[var(--text-secondary)]",
   }[result.score_role ?? "supporting-score"];
 
   const percent = scoreToPercent(result.score);
@@ -38,12 +38,11 @@ export default function LayerCard({
   return (
     <div
       className={`
-        border rounded-xl overflow-hidden transition-all duration-300
-        ${result.error ? "border-red-900/50 bg-red-950/20" : "border-[#2a2a2a] bg-[#1a1a1a]"}
-        hover:border-[#444]
+        rounded-xl overflow-hidden transition-all duration-300 text-[var(--text-primary)]
+        ${result.error ? "border border-[rgba(10,65,116,0.24)] bg-[rgba(123,189,232,0.2)]" : "border panel-muted"}
+        hover:border-[rgba(73,118,159,0.32)]
       `}
     >
-      {/* Header — always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-4 text-left"
@@ -57,17 +56,17 @@ export default function LayerCard({
                 {roleLabel}
               </span>
               {result.suppressed && (
-                <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+                <span className="rounded-full border border-[rgba(10,65,116,0.2)] bg-[rgba(123,189,232,0.2)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-primary)]">
                   Guardrailed
                 </span>
               )}
             </div>
             {result.suppression_reason ? (
-              <p className="text-xs text-amber-300/90 mt-0.5 line-clamp-2">
+              <p className="text-xs text-[var(--text-soft)] mt-0.5 line-clamp-2">
                 {result.suppression_reason}
               </p>
             ) : result.flags.length > 0 && (
-              <p className="text-xs text-[#a0a0a0] mt-0.5 line-clamp-1">
+              <p className="text-xs text-[var(--text-soft)] mt-0.5 line-clamp-1">
                 {result.flags[0]}
               </p>
             )}
@@ -75,15 +74,14 @@ export default function LayerCard({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Score bar */}
-          <div className="w-24 h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
+          <div className="w-24 h-2 bg-[rgba(73,118,159,0.16)] rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-1000 ${
                 tier === "high"
-                  ? "bg-red-500"
+                  ? "bg-[#6EA2B3]"
                   : tier === "medium"
-                    ? "bg-amber-500"
-                    : "bg-green-500"
+                    ? "bg-[#49769F]"
+                    : "bg-[#4E8EA2]"
               }`}
               style={{ width: `${percent}%` }}
             />
@@ -91,56 +89,54 @@ export default function LayerCard({
           <span className={`text-sm font-mono font-bold w-10 text-right ${riskColor(tier)}`}>
             {percent}
           </span>
-          <span className="text-[#a0a0a0] text-sm">{expanded ? "▲" : "▼"}</span>
+          <span className="text-[var(--text-soft)] text-sm">{expanded ? "▲" : "▼"}</span>
         </div>
       </button>
 
-      {/* Expanded details */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#2a2a2a]">
+        <div className="px-4 pb-4 border-t border-[rgba(73,118,159,0.18)]">
           <div className="mt-3 grid grid-cols-2 md:grid-cols-6 gap-2">
-            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
-              <div className="text-[11px] uppercase tracking-wider text-[#777]">Family</div>
-              <div className="mt-1 text-sm capitalize">{result.evidence_family ?? "unknown"}</div>
+            <div className="rounded-lg border border-[rgba(73,118,159,0.18)] bg-white/[0.34] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted-strong)]">Family</div>
+              <div className="mt-1 text-sm capitalize text-[var(--text-primary)]">{result.evidence_family ?? "unknown"}</div>
             </div>
-            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
-              <div className="text-[11px] uppercase tracking-wider text-[#777]">Role</div>
-              <div className="mt-1 text-sm">{roleLabel}</div>
+            <div className="rounded-lg border border-[rgba(73,118,159,0.18)] bg-white/[0.34] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted-strong)]">Role</div>
+              <div className="mt-1 text-sm text-[var(--text-primary)]">{roleLabel}</div>
             </div>
-            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
-              <div className="text-[11px] uppercase tracking-wider text-[#777]">Kind</div>
-              <div className="mt-1 text-sm capitalize">{result.implementation_kind ?? "unknown"}</div>
+            <div className="rounded-lg border border-[rgba(73,118,159,0.18)] bg-white/[0.34] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted-strong)]">Kind</div>
+              <div className="mt-1 text-sm capitalize text-[var(--text-primary)]">{result.implementation_kind ?? "unknown"}</div>
             </div>
-            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
-              <div className="text-[11px] uppercase tracking-wider text-[#777]">Weight</div>
-              <div className="mt-1 text-sm">{formatPercent(result.configured_weight)}</div>
+            <div className="rounded-lg border border-[rgba(73,118,159,0.18)] bg-white/[0.34] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted-strong)]">Weight</div>
+              <div className="mt-1 text-sm text-[var(--text-primary)]">{formatPercent(result.configured_weight)}</div>
             </div>
-            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
-              <div className="text-[11px] uppercase tracking-wider text-[#777]">Contribution</div>
-              <div className="mt-1 text-sm">{formatPercent(result.weighted_contribution)}</div>
+            <div className="rounded-lg border border-[rgba(73,118,159,0.18)] bg-white/[0.34] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted-strong)]">Contribution</div>
+              <div className="mt-1 text-sm text-[var(--text-primary)]">{formatPercent(result.weighted_contribution)}</div>
             </div>
-            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-2">
-              <div className="text-[11px] uppercase tracking-wider text-[#777]">Runtime</div>
-              <div className="mt-1 text-sm">{result.duration_ms !== undefined ? `${result.duration_ms}ms` : "-"}</div>
+            <div className="rounded-lg border border-[rgba(73,118,159,0.18)] bg-white/[0.34] p-2">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted-strong)]">Runtime</div>
+              <div className="mt-1 text-sm text-[var(--text-primary)]">{result.duration_ms !== undefined ? `${result.duration_ms}ms` : "-"}</div>
             </div>
           </div>
 
           {result.suppression_reason && (
-            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+            <div className="mt-3 rounded-lg border border-[rgba(10,65,116,0.22)] bg-[rgba(123,189,232,0.18)] p-3 text-sm text-[var(--text-primary)]">
               {result.suppression_reason}
             </div>
           )}
 
-          {/* Flags */}
           {result.flags.length > 0 && (
             <div className="mt-3">
-              <h4 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-semibold text-[var(--text-muted-strong)] uppercase tracking-wider mb-2">
                 Findings
               </h4>
               <ul className="space-y-1">
                 {result.flags.map((flag, i) => (
-                  <li key={i} className="text-sm flex items-start gap-2">
-                    <span className={tier === "high" ? "text-red-400" : tier === "medium" ? "text-amber-400" : "text-green-400"}>
+                  <li key={i} className="text-sm flex items-start gap-2 text-[var(--text-primary)]">
+                    <span className={tier === "high" ? "text-[#49769F]" : tier === "medium" ? "text-[#49769F]" : "text-[#4E8EA2]"}>
                       •
                     </span>
                     {flag}
@@ -150,67 +146,62 @@ export default function LayerCard({
             </div>
           )}
 
-          {/* ELA Heatmap */}
           {result.layer === "ela" && elaHeatmap && (
             <div className="mt-4">
-              <h4 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-semibold text-[var(--text-muted-strong)] uppercase tracking-wider mb-2">
                 ELA Heatmap
               </h4>
               <img
                 src={`data:image/png;base64,${elaHeatmap}`}
                 alt="ELA Heatmap"
-                className="rounded-lg max-w-full border border-[#2a2a2a]"
+                className="rounded-lg max-w-full border border-[rgba(73,118,159,0.18)]"
               />
-              <p className="text-xs text-[#a0a0a0] mt-1">
+              <p className="text-xs text-[var(--text-soft)] mt-1">
                 Bright areas = high compression error. Uniform brightness across the image suggests AI generation.
               </p>
             </div>
           )}
 
-          {/* TruFor Manipulation Heatmap */}
           {result.layer === "trufor" && truforHeatmap && (
             <div className="mt-4">
-              <h4 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-semibold text-[var(--text-muted-strong)] uppercase tracking-wider mb-2">
                 Manipulation Localisation Map
               </h4>
               <img
                 src={`data:image/png;base64,${truforHeatmap}`}
                 alt="TruFor Manipulation Heatmap"
-                className="rounded-lg max-w-full border border-[#2a2a2a]"
+                className="rounded-lg max-w-full border border-[rgba(73,118,159,0.18)]"
               />
-              <p className="text-xs text-[#a0a0a0] mt-1">
+              <p className="text-xs text-[var(--text-soft)] mt-1">
                 Red/warm areas = high probability of pixel-level manipulation. Blue = likely authentic.
               </p>
             </div>
           )}
 
-          {/* Gemini Reasoning */}
           {result.layer === "gemini" && (geminiReasoning || result.details?.template_like_output) && (
             <div className="mt-4">
-              <h4 className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-semibold text-[var(--text-muted-strong)] uppercase tracking-wider mb-2">
                 Gemini AI Reasoning
               </h4>
-              <div className="bg-[#111] rounded-lg p-3 text-sm leading-relaxed border border-[#2a2a2a]">
+              <div className="deep-panel rounded-lg p-3 text-sm leading-relaxed">
                 {geminiReasoning || "Local VLM did not return usable free-text reasoning for this image. The output looked like a copied template, so it was suppressed."}
               </div>
             </div>
           )}
 
-          {/* Confidence */}
-          <div className="mt-3 flex items-center gap-2 text-xs text-[#a0a0a0]">
+          <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-soft)]">
             <span>Confidence:</span>
-            <div className="w-16 h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
+            <div className="w-16 h-1.5 bg-[rgba(73,118,159,0.16)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-500 rounded-full"
+                className="h-full bg-[#6EA2B3] rounded-full"
                 style={{ width: `${scoreToPercent(result.confidence)}%` }}
               />
             </div>
             <span>{scoreToPercent(result.confidence)}%</span>
           </div>
 
-          {/* Error */}
           {result.error && (
-            <div className="mt-3 text-xs text-red-400 bg-red-950/30 rounded p-2">
+            <div className="mt-3 text-xs text-[var(--text-primary)] bg-[rgba(123,189,232,0.24)] rounded p-2">
               Error: {result.error}
             </div>
           )}

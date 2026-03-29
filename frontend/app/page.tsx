@@ -189,17 +189,19 @@ export default function Home() {
   const topReasons = result ? buildTopReasons(result) : [];
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1200px] flex-col px-4 pb-10 pt-6 md:px-6 lg:max-w-[1280px]">
+    <main className="mx-auto relative flex min-h-screen w-full max-w-[1860px] flex-col px-4 pb-10 pt-6 md:px-8 2xl:px-10">
+      <div className="pointer-events-none absolute inset-x-16 top-0 -z-10 h-64 rounded-full bg-[radial-gradient(circle,rgba(169,195,182,0.3),transparent_70%)] blur-3xl" />
+      <div className="pointer-events-none absolute right-16 top-16 -z-10 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(143,184,202,0.24),transparent_72%)] blur-3xl" />
       <AppHeader />
 
       {error && (
-        <div className="section-enter mb-6 rounded-[22px] border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-200">
+        <div className="section-enter mb-6 rounded-[22px] border border-[rgba(145,172,154,0.24)] bg-[rgba(169,195,182,0.24)] px-4 py-3 text-sm text-[var(--text-primary)]">
           {error}
         </div>
       )}
 
-      <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)] lg:items-start">
-        <aside className="section-enter flex flex-col gap-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
+      <div className="grid flex-1 gap-7 xl:grid-cols-[minmax(360px,460px)_minmax(0,1fr)] xl:items-start">
+        <aside className="section-enter flex flex-col gap-5 xl:sticky xl:top-6 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto xl:pr-2">
           <div id="image-upload-anchor">
             <ImageUpload
               onFileSelect={handleFileSelect}
@@ -211,14 +213,14 @@ export default function Home() {
 
           <div
             className={cn(
-              "rounded-[26px] border px-5 py-5",
-              result ? riskBg(result.risk_tier) : "panel-surface border-white/10"
+              "glass-highlight rounded-[26px] border px-5 py-5",
+              result ? riskBg(result.risk_tier) : "panel-surface border-[rgba(73,118,159,0.2)]"
             )}
           >
             {result ? (
               <div className="space-y-3">
                 <h2 className="text-sm font-medium text-[var(--text-secondary)]">Current file</h2>
-                <p className="break-words text-base font-semibold text-white [overflow-wrap:anywhere]">
+                <p className="break-words text-base font-semibold text-[var(--text-primary)] [overflow-wrap:anywhere]">
                   {result.filename}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -226,10 +228,10 @@ export default function Home() {
                     className={cn(
                       "rounded-full border px-3 py-1 text-xs font-semibold",
                       result.risk_tier === "high"
-                        ? "border-red-500/35 bg-red-500/15 text-red-200"
+                        ? "border-[#91AC9A] bg-[#A9C3B6]/38 text-[var(--text-primary)]"
                         : result.risk_tier === "medium"
-                          ? "border-amber-500/35 bg-amber-500/15 text-amber-200"
-                          : "border-emerald-500/35 bg-emerald-500/15 text-emerald-200"
+                          ? "border-[#A6C3CE] bg-[#B7D1D3]/32 text-[var(--text-primary)]"
+                          : "border-[#8FB8CA] bg-[#CEDFDF]/68 text-[var(--text-primary)]"
                     )}
                   >
                     {result.risk_tier === "high"
@@ -243,8 +245,8 @@ export default function Home() {
               </div>
             ) : (
               <div>
-                <h2 className="text-lg font-semibold text-white">Your image stays visible</h2>
-                <p className="mt-2 text-sm leading-6 text-[#a5a5a5]">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Your image stays visible</h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
                   Upload a file to see a plain-language summary first. Detailed checks, heatmaps, and metadata are
                   one click away when you need them.
                 </p>
@@ -252,7 +254,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="rounded-[26px] panel-surface px-5 py-5">
+          <div className="glass-highlight rounded-[26px] panel-surface px-5 py-5">
             <button
               type="button"
               onClick={() => setShowContext((c) => !c)}
@@ -260,9 +262,9 @@ export default function Home() {
             >
               <div>
                 <p className="text-xs font-medium text-[var(--text-muted-strong)]">Optional context</p>
-                <h3 className="mt-1 text-base font-semibold text-white">Review context (claims / orders)</h3>
+                <h3 className="mt-1 text-base font-semibold text-[var(--text-primary)]">Review context (claims / orders)</h3>
               </div>
-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-[#c8c8c8]">
+              <span className="soft-chip rounded-full px-3 py-1 text-xs font-medium">
                 {showContext ? "Hide" : "Show"}
               </span>
             </button>
@@ -274,32 +276,32 @@ export default function Home() {
                   placeholder="Account ID"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:bg-black/30"
+                  className="field-input rounded-2xl px-4 py-3 text-sm outline-none transition"
                 />
                 <input
                   type="text"
                   placeholder="Device fingerprint"
                   value={deviceFp}
                   onChange={(e) => setDeviceFp(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:bg-black/30"
+                  className="field-input rounded-2xl px-4 py-3 text-sm outline-none transition"
                 />
                 <input
                   type="number"
                   placeholder="Order value (USD)"
                   value={orderValue}
                   onChange={(e) => setOrderValue(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:bg-black/30"
+                  className="field-input rounded-2xl px-4 py-3 text-sm outline-none transition"
                 />
               </div>
             ) : (
-              <p className="mt-3 text-sm leading-6 text-[#9b9b9b]">
+              <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
                 Add account, device, or order hints when you want behavioral scoring to influence the run.
               </p>
             )}
           </div>
         </aside>
 
-        <section className="section-enter min-h-[480px] rounded-[28px] panel-surface px-4 py-5 md:px-6 md:py-6">
+        <section className="section-enter glass-highlight ambient-glow min-h-[540px] rounded-[28px] panel-surface px-5 py-6 md:px-7 md:py-7">
           {result ? (
             <div className="flex flex-col gap-6">
               <VerdictHero result={result} />
@@ -307,13 +309,13 @@ export default function Home() {
               <ReasonList reasons={topReasons} onViewTechnical={openTechnical} />
 
               {result.scoring_summary.conflicting_signals.length > 0 && (
-                <div className="rounded-[22px] border border-amber-500/25 bg-amber-500/[0.08] px-4 py-4">
-                  <p className="text-xs font-medium text-amber-200/90">Mixed signals</p>
-                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-amber-50/95 md:grid-cols-2">
+                <div className="rounded-[22px] border border-[rgba(145,172,154,0.22)] bg-[rgba(169,195,182,0.18)] px-4 py-4">
+                  <p className="text-xs font-medium text-[var(--text-secondary)]">Mixed signals</p>
+                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--text-primary)] md:grid-cols-2">
                     {result.scoring_summary.conflicting_signals.map((signal, index) => (
                       <li
                         key={`${signal}-${index}`}
-                        className="rounded-2xl border border-amber-500/15 bg-black/15 px-3 py-2 break-words [overflow-wrap:anywhere]"
+                        className="rounded-2xl border border-[rgba(145,172,154,0.18)] bg-[rgba(245,249,247,0.76)] px-3 py-2 break-words [overflow-wrap:anywhere]"
                       >
                         {signal}
                       </li>
@@ -323,13 +325,13 @@ export default function Home() {
               )}
 
               {result.hash_matches.length > 0 && (
-                <div className="rounded-[22px] border border-red-900/40 bg-red-950/25 px-4 py-4">
-                  <p className="text-xs font-medium text-red-200/90">Possible duplicate images</p>
-                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-red-100/95 md:grid-cols-2">
+                <div className="rounded-[22px] border border-[rgba(166,195,206,0.24)] bg-[rgba(143,184,202,0.18)] px-4 py-4">
+                  <p className="text-xs font-medium text-[var(--text-primary)]">Possible duplicate images</p>
+                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--text-primary)] md:grid-cols-2">
                     {result.hash_matches.map((match, index) => (
                       <li
                         key={`${match.matched_claim_id}-${match.hash_type}-${index}`}
-                        className="rounded-2xl border border-red-500/15 bg-black/20 px-3 py-2 break-words [overflow-wrap:anywhere]"
+                        className="rounded-2xl border border-[rgba(166,195,206,0.22)] bg-[rgba(245,249,247,0.78)] px-3 py-2 break-words [overflow-wrap:anywhere]"
                       >
                         Record #{match.matched_claim_id} · {match.hash_type} · distance {match.hamming_distance}
                       </li>
@@ -347,14 +349,14 @@ export default function Home() {
                 onToggle={() => setTechnicalOpen((o) => !o)}
                 overviewCards={overviewCards}
               >
-                <div className="grid min-h-0 gap-4 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)]">
-                  <div className="flex max-h-[min(70vh,720px)] min-h-[280px] flex-col rounded-[24px] border border-white/[0.06] bg-black/20 p-3">
+                <div className="grid min-h-0 gap-5 2xl:grid-cols-[minmax(360px,460px)_minmax(0,1fr)]">
+                  <div className="flex max-h-[min(78vh,900px)] min-h-[380px] flex-col rounded-[24px] border border-[rgba(145,172,154,0.24)] bg-[rgba(245,249,247,0.78)] p-4">
                     <div className="flex items-center justify-between gap-3 px-2 pb-3 pt-1">
                       <div>
                         <p className="text-xs font-medium text-[var(--text-muted-strong)]">All checks</p>
-                        <h3 className="mt-0.5 text-base font-semibold text-white">By group</h3>
+                        <h3 className="mt-0.5 text-base font-semibold text-[var(--text-primary)]">By group</h3>
                       </div>
-                      <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-0.5 text-xs text-[#bcbcbc]">
+                      <span className="soft-chip rounded-full px-2.5 py-0.5 text-xs">
                         {result.layer_results.length} total
                       </span>
                     </div>
@@ -371,19 +373,19 @@ export default function Home() {
                             className={cn(
                               "rounded-full border px-3 py-2 text-left text-sm transition",
                               isActive
-                                ? "border-white/20 bg-white/[0.08] text-white"
-                                : "border-white/10 bg-black/15 text-[#9a9a9a] hover:border-white/20 hover:text-white",
+                                ? "border-[rgba(145,172,154,0.34)] bg-[rgba(169,195,182,0.34)] text-[var(--text-primary)]"
+                                : "border-[rgba(145,172,154,0.2)] bg-[rgba(237,244,241,0.82)] text-[var(--text-soft)] hover:border-[rgba(145,172,154,0.32)] hover:bg-[rgba(206,223,223,0.5)] hover:text-[var(--text-primary)]",
                               section.layers.length === 0 && "cursor-not-allowed opacity-40"
                             )}
                           >
                             <div className="text-xs font-medium text-[var(--text-muted-strong)]">{section.title}</div>
-                            <div className="mt-0.5 text-xs text-[#b6b6b6]">{section.layers.length} checks</div>
+                            <div className="mt-0.5 text-xs text-[var(--text-muted-strong)]">{section.layers.length} checks</div>
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-1 pb-2 pr-1">
+                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-1 pb-2 pr-1">
                       {activeLayers.length > 0 ? (
                         activeLayers.map((layer) => (
                           <LayerListItem
@@ -394,7 +396,7 @@ export default function Home() {
                           />
                         ))
                       ) : (
-                        <div className="rounded-[20px] border border-white/10 bg-black/15 px-4 py-4 text-sm text-[#989898]">
+                        <div className="rounded-[20px] border border-[rgba(145,172,154,0.24)] bg-[rgba(237,244,241,0.8)] px-4 py-4 text-sm text-[var(--text-soft)]">
                           No checks in this group for this run.
                         </div>
                       )}
@@ -418,24 +420,24 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex min-h-[420px] flex-col justify-center gap-6 py-6">
-              <div className="mx-auto max-w-lg text-center">
+              <div className="mx-auto max-w-2xl text-center">
                 <p className="text-sm font-medium text-[var(--text-muted-strong)]">Results will appear here</p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--text-primary)]">
                   Upload an image to see your screening summary
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-[#a3a3a3]">
+                <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
                   You’ll get a plain-language verdict, a short “why,” and optional technical evidence—heatmaps,
                   metadata, and per-check scores—for teams that need depth.
                 </p>
               </div>
               <div className="mx-auto grid max-w-2xl gap-3 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-white/[0.07] bg-black/20 px-4 py-4 text-left text-sm leading-6 text-[#c8c8c8]">
-                  <span className="font-medium text-white">Honest uncertainty</span>
+                <div className="rounded-[22px] border border-[rgba(145,172,154,0.24)] bg-[rgba(237,244,241,0.82)] px-4 py-4 text-left text-sm leading-6 text-[var(--text-soft)]">
+                  <span className="font-medium text-[var(--text-primary)]">Honest uncertainty</span>
                   <br />
                   We don’t force a fake-vs-real label. You’ll see risk, confidence, and reasons.
                 </div>
-                <div className="rounded-[22px] border border-white/[0.07] bg-black/20 px-4 py-4 text-left text-sm leading-6 text-[#c8c8c8]">
-                  <span className="font-medium text-white">HEIC-friendly</span>
+                <div className="rounded-[22px] border border-[rgba(145,172,154,0.24)] bg-[rgba(237,244,241,0.82)] px-4 py-4 text-left text-sm leading-6 text-[var(--text-soft)]">
+                  <span className="font-medium text-[var(--text-primary)]">HEIC-friendly</span>
                   <br />
                   If the browser can’t preview HEIC/HEIF, analysis still runs and we show file details instead.
                 </div>

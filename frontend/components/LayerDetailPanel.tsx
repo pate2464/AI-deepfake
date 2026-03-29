@@ -48,9 +48,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_BADGES: Record<string, string> = {
-  "core-score": "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  "supporting-score": "border-sky-500/30 bg-sky-500/10 text-sky-300",
-  "other-layer": "border-zinc-500/30 bg-zinc-500/10 text-zinc-300",
+  "core-score": "border-[rgba(145,172,154,0.2)] bg-[rgba(169,195,182,0.18)] text-[var(--text-primary)]",
+  "supporting-score": "border-[rgba(166,195,206,0.22)] bg-[rgba(183,209,211,0.2)] text-[var(--text-primary)]",
+  "other-layer": "border-[rgba(169,195,182,0.18)] bg-[rgba(206,223,223,0.24)] text-[var(--text-secondary)]",
 };
 
 export default function LayerDetailPanel({
@@ -64,10 +64,10 @@ export default function LayerDetailPanel({
       <div className="flex min-h-[320px] items-center justify-center rounded-[28px] panel-muted px-6 py-8 text-center xl:min-h-0">
         <div className="max-w-sm">
           <div className="text-xs font-medium text-[var(--text-muted-strong)]">Check details</div>
-          <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
+          <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--text-primary)]">
             Pick a check on the left
           </h3>
-          <p className="mt-3 text-sm leading-6 text-[#9d9d9d]">
+          <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
             We show one check at a time so scores, notes, and visuals stay easy to read.
           </p>
         </div>
@@ -85,36 +85,36 @@ export default function LayerDetailPanel({
     ROLE_BADGES[result.score_role ?? "supporting-score"] ?? ROLE_BADGES["supporting-score"];
 
   return (
-    <div className="flex min-h-[320px] flex-col rounded-[28px] panel-muted xl:min-h-0 xl:overflow-hidden">
-      <div className="border-b border-white/8 px-5 py-5">
+    <div className="flex min-h-[420px] flex-col rounded-[28px] panel-muted xl:min-h-0 xl:overflow-hidden">
+      <div className="border-b border-[rgba(145,172,154,0.14)] px-6 py-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-xl">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(145,172,154,0.14)] bg-white/[0.4] text-xl">
                 {layerIcon(result.layer)}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="min-w-0 flex-1 break-words text-xl font-semibold tracking-[-0.03em] text-white [overflow-wrap:anywhere]">
+                  <h3 className="min-w-0 flex-1 break-words text-xl font-semibold tracking-[-0.03em] text-[var(--text-primary)] [overflow-wrap:anywhere]">
                     {layerLabel(result.layer)}
                   </h3>
                   <span className={cn("shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]", roleBadgeClass)}>
                     {roleLabel}
                   </span>
                   {result.suppressed ? (
-                    <span className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                    <span className="shrink-0 rounded-full border border-[rgba(145,172,154,0.2)] bg-[rgba(169,195,182,0.2)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-primary)]">
                       Guardrailed
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-2 break-words text-sm leading-6 text-[#a7a7a7] [overflow-wrap:anywhere]">
+                <p className="mt-2 break-words text-sm leading-6 text-[var(--text-soft)] [overflow-wrap:anywhere]">
                   {result.suppression_reason || result.flags[0] || "No noteworthy flags were emitted for this layer."}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="shrink-0 rounded-[24px] border border-white/10 bg-black/10 px-4 py-3 text-right">
+          <div className="deep-panel shrink-0 rounded-[24px] px-4 py-3 text-right">
             <div className="text-xs font-medium text-[var(--text-muted-strong)]">Signal strength</div>
             <div className={cn("mt-2 text-3xl font-semibold", riskColor(tier))}>
               {scoreToPercent(result.score)}
@@ -123,78 +123,78 @@ export default function LayerDetailPanel({
         </div>
       </div>
 
-      <div className="flex-1 space-y-5 overflow-y-auto px-5 pb-8 pt-5">
-        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(112px,1fr))] lg:[grid-template-columns:repeat(auto-fit,minmax(126px,1fr))]">
+      <div className="flex-1 space-y-5 overflow-y-auto px-6 pb-8 pt-6">
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               <ShieldAlert className="h-3.5 w-3.5" />
               Signal family
             </div>
-            <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
+            <div className="mt-2 break-words text-sm text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {result.evidence_family ?? "Unknown"}
             </div>
           </div>
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               <Sigma className="h-3.5 w-3.5" />
               How sure (this check)
             </div>
-            <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
+            <div className="mt-2 break-words text-sm text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {scoreToPercent(result.confidence)}%
             </div>
           </div>
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               <Scale className="h-3.5 w-3.5" />
               Configured weight
             </div>
-            <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
+            <div className="mt-2 break-words text-sm text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {formatPercent(result.configured_weight)}
             </div>
           </div>
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               <Sigma className="h-3.5 w-3.5" />
               Impact on score
             </div>
-            <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
+            <div className="mt-2 break-words text-sm text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {formatPercent(result.weighted_contribution)}
             </div>
           </div>
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               <Clock3 className="h-3.5 w-3.5" />
               Check duration
             </div>
-            <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
+            <div className="mt-2 break-words text-sm text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {result.duration_ms !== undefined ? `${result.duration_ms}ms` : "-"}
             </div>
           </div>
           <div className="min-w-0 rounded-[22px] panel-inset px-4 py-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               <TimerReset className="h-3.5 w-3.5" />
               Kind
             </div>
-            <div className="mt-2 break-words text-sm text-white [overflow-wrap:anywhere]">
+            <div className="mt-2 break-words text-sm text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {result.implementation_kind ?? "Unknown"}
             </div>
           </div>
         </div>
 
         {result.suppression_reason ? (
-          <div className="rounded-[24px] border border-amber-500/25 bg-amber-500/[0.08] px-4 py-4 text-sm leading-6 text-amber-50">
+          <div className="rounded-[24px] border border-[rgba(145,172,154,0.22)] bg-[rgba(169,195,182,0.18)] px-4 py-4 text-sm leading-6 text-[var(--text-primary)]">
             {result.suppression_reason}
           </div>
         ) : null}
 
         {result.flags.length > 0 ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               What we noticed
             </div>
             <ul className="mt-3 grid gap-2 md:grid-cols-2">
               {result.flags.map((flag, index) => (
-                <li key={`${flag}-${index}`} className="rounded-2xl border border-white/8 bg-black/10 px-3 py-3 text-sm leading-6 text-[#dedede] break-words [overflow-wrap:anywhere]">
+                <li key={`${flag}-${index}`} className="deep-panel rounded-2xl px-3 py-3 text-sm leading-6 break-words [overflow-wrap:anywhere]">
                   {flag}
                 </li>
               ))}
@@ -204,16 +204,16 @@ export default function LayerDetailPanel({
 
         {detailEntries.length > 0 ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               Raw fields
             </div>
             <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(168px,1fr))]">
               {detailEntries.map(([key, value]) => (
-                <div key={key} className="min-w-0 rounded-2xl border border-white/8 bg-black/10 px-3 py-3">
-                  <div className="break-words text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7f7f7f] [overflow-wrap:anywhere]">
+                <div key={key} className="deep-panel min-w-0 rounded-2xl px-3 py-3">
+                  <div className="break-words text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted-strong)] [overflow-wrap:anywhere]">
                     {key.replace(/_/g, " ")}
                   </div>
-                  <div className="mt-2 break-words text-sm leading-6 text-[#e0e0e0] [overflow-wrap:anywhere]">
+                  <div className="mt-2 break-words text-sm leading-6 text-[var(--text-primary)] [overflow-wrap:anywhere]">
                     {formatDetailValue(value)}
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function LayerDetailPanel({
 
         {result.layer === "ela" && elaHeatmap ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               Compression difference map
             </div>
             <img
@@ -232,7 +232,7 @@ export default function LayerDetailPanel({
               alt="ELA heatmap"
               className="mt-3 w-full rounded-[22px] border border-white/8"
             />
-            <p className="mt-3 text-sm leading-6 text-[#a2a2a2]">
+            <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
               Bright areas indicate stronger compression error. Uniform brightness across large regions can align with synthetic generation.
             </p>
           </section>
@@ -240,7 +240,7 @@ export default function LayerDetailPanel({
 
         {result.layer === "trufor" && truforHeatmap ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               Possible edit regions
             </div>
             <img
@@ -248,7 +248,7 @@ export default function LayerDetailPanel({
               alt="TruFor manipulation heatmap"
               className="mt-3 w-full rounded-[22px] border border-white/8"
             />
-            <p className="mt-3 text-sm leading-6 text-[#a2a2a2]">
+            <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
               Warm regions indicate a higher probability of pixel-level manipulation, while cool regions are more likely authentic.
             </p>
           </section>
@@ -256,31 +256,31 @@ export default function LayerDetailPanel({
 
         {result.layer === "gemini" && (geminiReasoning || result.details?.template_like_output) ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
               AI-generated interpretation
             </div>
-            <div className="mt-3 rounded-[22px] border border-white/8 bg-black/10 px-4 py-4 text-sm leading-7 text-[#dedede] break-words [overflow-wrap:anywhere]">
+            <div className="deep-panel mt-3 rounded-[22px] px-4 py-4 text-sm leading-7 break-words [overflow-wrap:anywhere]">
               {geminiReasoning || "Local VLM output resembled a copied template, so free-text reasoning was suppressed for this run."}
             </div>
           </section>
         ) : null}
 
         <div className="rounded-[24px] panel-inset px-4 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
             <span className="break-words [overflow-wrap:anywhere]">Confidence bar</span>
             <span className="shrink-0">{scoreToPercent(result.confidence)}%</span>
           </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(145,172,154,0.14)]">
             <div
-              className="h-full rounded-full bg-white/70"
+              className="h-full rounded-full bg-[rgba(145,172,154,0.62)]"
               style={{ width: `${scoreToPercent(result.confidence)}%` }}
             />
           </div>
         </div>
 
         {result.error ? (
-          <div className="rounded-[24px] border border-red-900/50 bg-red-950/20 px-4 py-4 text-sm leading-6 text-red-100">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-200/70">
+          <div className="rounded-[24px] border border-[rgba(166,195,206,0.26)] bg-[rgba(206,223,223,0.28)] px-4 py-4 text-sm leading-6 text-[var(--text-primary)]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
               <AlertTriangle className="h-3.5 w-3.5" />
               Check error
             </div>
