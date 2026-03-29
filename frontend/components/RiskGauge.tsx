@@ -20,9 +20,9 @@ export default function RiskGauge({
   const offset = circumference - (score * circumference);
 
   const strokeColor = {
-    low: "#5c63a4",
-    medium: "#8b7fac",
-    high: "#d4949d",
+    low: "#4E8EA2",
+    medium: "#49769F",
+    high: "#6EA2B3",
   }[tier];
 
   const tierLabel = {
@@ -46,7 +46,7 @@ export default function RiskGauge({
             cy="50"
             r="45"
             fill="none"
-            stroke="#acb0cc"
+            stroke="#BDD8E9"
             strokeWidth="8"
           />
           <circle
@@ -69,14 +69,14 @@ export default function RiskGauge({
           >
             {percent}
           </span>
-          <span className="text-xs text-[#a0a0a0]">/ 100</span>
+          <span className="text-xs text-[var(--text-soft)]">/ 100</span>
         </div>
       </div>
       <div className="text-center">
         <div className={`text-sm font-bold tracking-wider ${riskColor(tier)}`}>
           {tierLabel}
         </div>
-        <div className="mt-1 text-xs text-[#a0a0a0]">
+        <div className="mt-1 text-xs text-[var(--text-soft)]">
           Recommended: {tierAction}
         </div>
       </div>

@@ -37,8 +37,8 @@ export default function EvidenceSummaryAccordions({
   return (
     <section className={cn("space-y-3", className)}>
       <div>
-        <h3 className="text-lg font-semibold text-white">What we checked</h3>
-        <p className="mt-1 text-sm text-[#c3cde0]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">What we checked</h3>
+        <p className="mt-1 text-sm text-[var(--text-soft)]">
           Groups are for readability—open any section for a quick peek. Full detail lives in technical view.
         </p>
       </div>
@@ -52,35 +52,35 @@ export default function EvidenceSummaryAccordions({
           return (
             <details
               key={key}
-              className="group rounded-[22px] border border-white/[0.15] bg-[#23262c] open:border-white/[0.25] open:bg-[#333740]"
+              className="group rounded-[22px] border border-[rgba(73,118,159,0.18)] bg-[rgba(230,243,250,0.72)] open:border-[rgba(73,118,159,0.28)] open:bg-[rgba(123,189,232,0.28)]"
             >
               <summary
                 className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-left [&::-webkit-details-marker]:hidden"
                 aria-labelledby={headingId}
               >
                 <div className="min-w-0">
-                  <div id={headingId} className="text-base font-semibold text-white">
+                  <div id={headingId} className="text-base font-semibold text-[var(--text-primary)]">
                     {meta.title}
                   </div>
-                  <div className="mt-0.5 text-xs text-[#a8b8d6]">{meta.subtitle}</div>
-                  <p className="mt-2 text-sm leading-6 text-[#e7eefc]">{summarizeGroup(layers)}</p>
+                  <div className="mt-0.5 text-xs text-[var(--text-muted-strong)]">{meta.subtitle}</div>
+                  <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{summarizeGroup(layers)}</p>
                 </div>
-                <ChevronDown className="h-5 w-5 shrink-0 text-[#888] transition group-open:rotate-180" aria-hidden />
+                <ChevronDown className="h-5 w-5 shrink-0 text-[var(--text-muted-strong)] transition group-open:rotate-180" aria-hidden />
               </summary>
-              <div id={panelId} className="border-t border-white/[0.12] px-4 pb-4 pt-0">
+              <div id={panelId} className="border-t border-[rgba(73,118,159,0.12)] px-4 pb-4 pt-0">
                 {layers.length === 0 ? (
-                  <p className="pt-3 text-sm text-[#888]">Nothing in this group.</p>
+                  <p className="pt-3 text-sm text-[var(--text-soft)]">Nothing in this group.</p>
                 ) : (
                   <ul className="mt-3 grid gap-2">
                     {layers.map((layer) => (
                       <li
                         key={layer.layer}
-                        className="flex flex-wrap items-baseline justify-between gap-2 rounded-xl border border-white/[0.14] bg-[#0c1528] px-3 py-2 text-sm"
+                        className="deep-panel flex flex-wrap items-baseline justify-between gap-2 rounded-xl px-3 py-2 text-sm"
                       >
-                        <span className="font-medium text-white [overflow-wrap:anywhere]">
+                        <span className="font-medium text-[var(--text-primary)] [overflow-wrap:anywhere]">
                           {layerLabel(layer.layer)}
                         </span>
-                        <span className="tabular-nums text-[#ffeddc]">
+                        <span className="tabular-nums text-[var(--text-secondary)]">
                           signal {scoreToPercent(layer.score)} · confidence {scoreToPercent(layer.confidence)}%
                         </span>
                       </li>

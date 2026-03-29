@@ -190,12 +190,12 @@ export default function Home() {
 
   return (
     <main className="mx-auto relative flex min-h-screen w-full max-w-[1860px] flex-col px-4 pb-10 pt-6 md:px-8 2xl:px-10">
-      <div className="pointer-events-none absolute inset-x-16 top-0 -z-10 h-64 rounded-full bg-[radial-gradient(circle,rgba(168,183,174,0.28),transparent_70%)] blur-3xl" />
-      <div className="pointer-events-none absolute right-16 top-16 -z-10 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(241,181,181,0.28),transparent_72%)] blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-16 top-0 -z-10 h-64 rounded-full bg-[radial-gradient(circle,rgba(123,189,232,0.32),transparent_70%)] blur-3xl" />
+      <div className="pointer-events-none absolute right-16 top-16 -z-10 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(78,142,162,0.24),transparent_72%)] blur-3xl" />
       <AppHeader />
 
       {error && (
-        <div className="section-enter mb-6 rounded-[22px] border border-[#c67a7a]/50 bg-[#f1b5b5]/35 px-4 py-3 text-sm text-[#6b3a3a]">
+        <div className="section-enter mb-6 rounded-[22px] border border-[rgba(10,65,116,0.22)] bg-[rgba(123,189,232,0.2)] px-4 py-3 text-sm text-[var(--text-primary)]">
           {error}
         </div>
       )}
@@ -214,13 +214,13 @@ export default function Home() {
           <div
             className={cn(
               "glass-highlight rounded-[26px] border px-5 py-5",
-              result ? riskBg(result.risk_tier) : "panel-surface border-white/10"
+              result ? riskBg(result.risk_tier) : "panel-surface border-[rgba(73,118,159,0.2)]"
             )}
           >
             {result ? (
               <div className="space-y-3">
                 <h2 className="text-sm font-medium text-[var(--text-secondary)]">Current file</h2>
-                <p className="break-words text-base font-semibold text-[#2f3340] [overflow-wrap:anywhere]">
+                <p className="break-words text-base font-semibold text-[var(--text-primary)] [overflow-wrap:anywhere]">
                   {result.filename}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -228,10 +228,10 @@ export default function Home() {
                     className={cn(
                       "rounded-full border px-3 py-1 text-xs font-semibold",
                       result.risk_tier === "high"
-                        ? "border-[#c67a7a] bg-[#f1b5b5]/45 text-[#6b3a3a]"
+                        ? "border-[#49769F] bg-[#BDD8E9]/62 text-[var(--text-primary)]"
                         : result.risk_tier === "medium"
-                          ? "border-[#93939b] bg-[#dfe2db]/70 text-[#4f5562]"
-                          : "border-[#a8b7ae] bg-[#c6d2c6]/70 text-[#44554c]"
+                          ? "border-[#49769F] bg-[#6EA2B3]/18 text-[var(--text-primary)]"
+                          : "border-[#4E8EA2] bg-[#BDD8E9]/52 text-[var(--text-primary)]"
                     )}
                   >
                     {result.risk_tier === "high"
@@ -245,8 +245,8 @@ export default function Home() {
               </div>
             ) : (
               <div>
-                <h2 className="text-lg font-semibold text-[#2f3340]">Your image stays visible</h2>
-                <p className="mt-2 text-sm leading-6 text-[#4b4969]">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Your image stays visible</h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
                   Upload a file to see a plain-language summary first. Detailed checks, heatmaps, and metadata are
                   one click away when you need them.
                 </p>
@@ -262,9 +262,9 @@ export default function Home() {
             >
               <div>
                 <p className="text-xs font-medium text-[var(--text-muted-strong)]">Optional context</p>
-                <h3 className="mt-1 text-base font-semibold text-[#2f3340]">Review context (claims / orders)</h3>
+                <h3 className="mt-1 text-base font-semibold text-[var(--text-primary)]">Review context (claims / orders)</h3>
               </div>
-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-[#c8c8c8]">
+              <span className="soft-chip rounded-full px-3 py-1 text-xs font-medium">
                 {showContext ? "Hide" : "Show"}
               </span>
             </button>
@@ -276,25 +276,25 @@ export default function Home() {
                   placeholder="Account ID"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:bg-black/30"
+                  className="field-input rounded-2xl px-4 py-3 text-sm outline-none transition"
                 />
                 <input
                   type="text"
                   placeholder="Device fingerprint"
                   value={deviceFp}
                   onChange={(e) => setDeviceFp(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:bg-black/30"
+                  className="field-input rounded-2xl px-4 py-3 text-sm outline-none transition"
                 />
                 <input
                   type="number"
                   placeholder="Order value (USD)"
                   value={orderValue}
                   onChange={(e) => setOrderValue(e.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-white/20 focus:bg-black/30"
+                  className="field-input rounded-2xl px-4 py-3 text-sm outline-none transition"
                 />
               </div>
             ) : (
-              <p className="mt-3 text-sm leading-6 text-[#4b4969]">
+              <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
                 Add account, device, or order hints when you want behavioral scoring to influence the run.
               </p>
             )}
@@ -309,13 +309,13 @@ export default function Home() {
               <ReasonList reasons={topReasons} onViewTechnical={openTechnical} />
 
               {result.scoring_summary.conflicting_signals.length > 0 && (
-                <div className="rounded-[22px] border border-[#93939b]/40 bg-[#dfe2db]/65 px-4 py-4">
-                  <p className="text-xs font-medium text-[#4f5562]">Mixed signals</p>
-                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-[#2f3340] md:grid-cols-2">
+                <div className="rounded-[22px] border border-[rgba(73,118,159,0.22)] bg-[rgba(123,189,232,0.16)] px-4 py-4">
+                  <p className="text-xs font-medium text-[var(--text-secondary)]">Mixed signals</p>
+                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--text-primary)] md:grid-cols-2">
                     {result.scoring_summary.conflicting_signals.map((signal, index) => (
                       <li
                         key={`${signal}-${index}`}
-                        className="rounded-2xl border border-[#a8b7ae]/50 bg-[#ffeddd] px-3 py-2 break-words [overflow-wrap:anywhere]"
+                        className="rounded-2xl border border-[rgba(73,118,159,0.18)] bg-[rgba(247,252,255,0.76)] px-3 py-2 break-words [overflow-wrap:anywhere]"
                       >
                         {signal}
                       </li>
@@ -325,13 +325,13 @@ export default function Home() {
               )}
 
               {result.hash_matches.length > 0 && (
-                <div className="rounded-[22px] border border-[#c67a7a]/45 bg-[#f1b5b5]/38 px-4 py-4">
-                  <p className="text-xs font-medium text-[#6b3a3a]">Possible duplicate images</p>
-                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-[#5f3737] md:grid-cols-2">
+                <div className="rounded-[22px] border border-[rgba(10,65,116,0.24)] bg-[rgba(110,162,179,0.16)] px-4 py-4">
+                  <p className="text-xs font-medium text-[var(--text-primary)]">Possible duplicate images</p>
+                  <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--text-primary)] md:grid-cols-2">
                     {result.hash_matches.map((match, index) => (
                       <li
                         key={`${match.matched_claim_id}-${match.hash_type}-${index}`}
-                        className="rounded-2xl border border-[#c67a7a]/45 bg-[#ffeddd] px-3 py-2 break-words [overflow-wrap:anywhere]"
+                        className="rounded-2xl border border-[rgba(73,118,159,0.2)] bg-[rgba(247,252,255,0.78)] px-3 py-2 break-words [overflow-wrap:anywhere]"
                       >
                         Record #{match.matched_claim_id} · {match.hash_type} · distance {match.hamming_distance}
                       </li>
@@ -350,13 +350,13 @@ export default function Home() {
                 overviewCards={overviewCards}
               >
                 <div className="grid min-h-0 gap-5 2xl:grid-cols-[minmax(360px,460px)_minmax(0,1fr)]">
-                  <div className="flex max-h-[min(78vh,900px)] min-h-[380px] flex-col rounded-[24px] border border-[#a8b7ae]/40 bg-[#fff7f2] p-4">
+                  <div className="flex max-h-[min(78vh,900px)] min-h-[380px] flex-col rounded-[24px] border border-[rgba(73,118,159,0.24)] bg-[rgba(247,252,255,0.78)] p-4">
                     <div className="flex items-center justify-between gap-3 px-2 pb-3 pt-1">
                       <div>
                         <p className="text-xs font-medium text-[var(--text-muted-strong)]">All checks</p>
-                        <h3 className="mt-0.5 text-base font-semibold text-[#2f3340]">By group</h3>
+                        <h3 className="mt-0.5 text-base font-semibold text-[var(--text-primary)]">By group</h3>
                       </div>
-                      <span className="rounded-full border border-[#a8b7ae]/50 bg-[#ffeddd] px-2.5 py-0.5 text-xs text-[#4f5562]">
+                      <span className="soft-chip rounded-full px-2.5 py-0.5 text-xs">
                         {result.layer_results.length} total
                       </span>
                     </div>
@@ -373,13 +373,13 @@ export default function Home() {
                             className={cn(
                               "rounded-full border px-3 py-2 text-left text-sm transition",
                               isActive
-                                ? "border-[#93939b]/70 bg-[#ffeddd] text-[#2f3340]"
-                                : "border-[#a8b7ae]/45 bg-[#f7f1ea] text-[#5e6572] hover:border-[#93939b]/70 hover:text-[#2f3340]",
+                                ? "border-[rgba(73,118,159,0.34)] bg-[rgba(123,189,232,0.34)] text-[var(--text-primary)]"
+                                : "border-[rgba(73,118,159,0.2)] bg-[rgba(230,243,250,0.82)] text-[var(--text-soft)] hover:border-[rgba(73,118,159,0.32)] hover:bg-[rgba(189,216,233,0.52)] hover:text-[var(--text-primary)]",
                               section.layers.length === 0 && "cursor-not-allowed opacity-40"
                             )}
                           >
                             <div className="text-xs font-medium text-[var(--text-muted-strong)]">{section.title}</div>
-                            <div className="mt-0.5 text-xs text-[#5d5a80]">{section.layers.length} checks</div>
+                            <div className="mt-0.5 text-xs text-[var(--text-muted-strong)]">{section.layers.length} checks</div>
                           </button>
                         );
                       })}
@@ -396,7 +396,7 @@ export default function Home() {
                           />
                         ))
                       ) : (
-                        <div className="rounded-[20px] border border-[#8b7fac]/40 bg-[#f4e6db] px-4 py-4 text-sm text-[#4b4969]">
+                        <div className="rounded-[20px] border border-[rgba(73,118,159,0.24)] bg-[rgba(237,247,252,0.8)] px-4 py-4 text-sm text-[var(--text-soft)]">
                           No checks in this group for this run.
                         </div>
                       )}
@@ -422,22 +422,22 @@ export default function Home() {
             <div className="flex min-h-[420px] flex-col justify-center gap-6 py-6">
               <div className="mx-auto max-w-2xl text-center">
                 <p className="text-sm font-medium text-[var(--text-muted-strong)]">Results will appear here</p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#2f3340]">
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--text-primary)]">
                   Upload an image to see your screening summary
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-[#4b4969]">
+                <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
                   You’ll get a plain-language verdict, a short “why,” and optional technical evidence—heatmaps,
                   metadata, and per-check scores—for teams that need depth.
                 </p>
               </div>
               <div className="mx-auto grid max-w-2xl gap-3 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-[#8b7fac]/30 bg-[#f7ece3] px-4 py-4 text-left text-sm leading-6 text-[#4b4969]">
-                  <span className="font-medium text-[#2f3340]">Honest uncertainty</span>
+                <div className="rounded-[22px] border border-[rgba(73,118,159,0.24)] bg-[rgba(237,247,252,0.82)] px-4 py-4 text-left text-sm leading-6 text-[var(--text-soft)]">
+                  <span className="font-medium text-[var(--text-primary)]">Honest uncertainty</span>
                   <br />
                   We don’t force a fake-vs-real label. You’ll see risk, confidence, and reasons.
                 </div>
-                <div className="rounded-[22px] border border-[#8b7fac]/30 bg-[#f7ece3] px-4 py-4 text-left text-sm leading-6 text-[#4b4969]">
-                  <span className="font-medium text-[#2f3340]">HEIC-friendly</span>
+                <div className="rounded-[22px] border border-[rgba(73,118,159,0.24)] bg-[rgba(237,247,252,0.82)] px-4 py-4 text-left text-sm leading-6 text-[var(--text-soft)]">
+                  <span className="font-medium text-[var(--text-primary)]">HEIC-friendly</span>
                   <br />
                   If the browser can’t preview HEIC/HEIF, analysis still runs and we show file details instead.
                 </div>

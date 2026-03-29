@@ -3,22 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #dec0ae;
-  --bg-secondary: #acb0cc;
-  --bg-card: #f4e6db;
-  --border: #8b7fac;
-  --text-primary: #2e2b3c;
-  --text-secondary: #4b4969;
-  --text-muted-strong: #5d5a80;
-  --accent: #d4949d;
-  --accent-rgb: 212, 148, 157;
-  --violet-rgb: 92, 99, 164;
-  --teal-rgb: 139, 127, 172;
-  --magenta-rgb: 172, 176, 204;
+  --bg-primary: #bdd8e9;
+  --bg-secondary: #7bbde8;
+  --bg-card: #bdd8e9;
+  --border: #49769f;
+  --text-primary: #1d568a;
+  --text-secondary: #49769f;
+  --text-muted-strong: #49769f;
+  --text-soft: #335979;
+  --text-on-dark: #f7fbff;
+  --surface-strong: #6ea2b3;
+  --surface-strong-rgb: 110, 162, 179;
+  --surface-soft: #bdd8e9;
+  --surface-rose: #4e8ea2;
+  --surface-lavender: #6ea2b3;
+  --surface-blue: #7bbde8;
+  --line-soft: rgba(73, 118, 159, 0.28);
+  --line-strong: rgba(29, 86, 138, 0.22);
+  --accent: #4e8ea2;
+  --accent-rgb: 78, 142, 162;
+  --violet-rgb: 73, 118, 159;
+  --teal-rgb: 110, 162, 179;
+  --magenta-rgb: 123, 189, 232;
   --surface-hero: linear-gradient(
     165deg,
-    rgba(250, 238, 228, 0.95),
-    rgba(240, 225, 213, 0.92)
+    rgba(240, 248, 253, 0.96),
+    rgba(212, 232, 245, 0.94)
   );
 }
 
@@ -29,10 +39,10 @@ html {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 10% 12%, rgba(var(--accent-rgb), 0.2), transparent 33%),
-    radial-gradient(circle at 88% 14%, rgba(var(--violet-rgb), 0.18), transparent 29%),
-    radial-gradient(circle at 56% 88%, rgba(var(--teal-rgb), 0.14), transparent 35%),
-    linear-gradient(180deg, #f5e7dc 0%, #dec0ae 40%, #e6cfbf 100%);
+    radial-gradient(circle at 12% 14%, rgba(var(--magenta-rgb), 0.28), transparent 34%),
+    radial-gradient(circle at 86% 18%, rgba(var(--teal-rgb), 0.22), transparent 30%),
+    radial-gradient(circle at 64% 74%, rgba(var(--violet-rgb), 0.14), transparent 32%),
+    linear-gradient(180deg, #bdd8e9 0%, #7bbde8 55%, #49769f 100%);
   color: var(--text-primary);
   font-family: "IBM Plex Sans", "Segoe UI Variable", "Segoe UI", sans-serif;
   overflow-x: hidden;
@@ -49,8 +59,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(92, 99, 164, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(92, 99, 164, 0.08) 1px, transparent 1px);
+    linear-gradient(rgba(92, 99, 164, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 99, 164, 0.07) 1px, transparent 1px);
   background-size: 80px 80px;
   mask-image: radial-gradient(circle at top, black 8%, transparent 78%);
   opacity: 0.22;
@@ -64,10 +74,10 @@ body::after {
   inset: -20vh -10vw;
   z-index: -2;
   background:
-    radial-gradient(circle at 20% 20%, rgba(var(--accent-rgb), 0.16), transparent 28%),
-    radial-gradient(circle at 80% 15%, rgba(var(--violet-rgb), 0.18), transparent 24%),
-    radial-gradient(circle at 72% 52%, rgba(var(--magenta-rgb), 0.13), transparent 24%),
-    radial-gradient(circle at 55% 78%, rgba(var(--teal-rgb), 0.12), transparent 30%);
+    radial-gradient(circle at 20% 20%, rgba(var(--accent-rgb), 0.18), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(var(--violet-rgb), 0.2), transparent 24%),
+    radial-gradient(circle at 74% 52%, rgba(var(--magenta-rgb), 0.18), transparent 24%),
+    radial-gradient(circle at 52% 78%, rgba(var(--teal-rgb), 0.16), transparent 30%);
   filter: blur(48px);
   animation: aurora-shift 14s ease-in-out infinite alternate;
 }
@@ -98,25 +108,25 @@ body::after {
 
 .panel-surface {
   background:
-    radial-gradient(circle at top left, rgba(var(--accent-rgb), 0.18), transparent 42%),
-    radial-gradient(circle at 80% 0%, rgba(var(--violet-rgb), 0.2), transparent 45%),
-    linear-gradient(180deg, #f9efe6 0%, #f2e4d8 100%);
-  border: 1px solid rgba(139, 127, 172, 0.5);
+    radial-gradient(circle at top left, rgba(var(--magenta-rgb), 0.18), transparent 42%),
+    radial-gradient(circle at 84% 0%, rgba(var(--teal-rgb), 0.18), transparent 45%),
+    linear-gradient(180deg, rgba(244, 250, 254, 0.96) 0%, rgba(221, 238, 248, 0.96) 100%);
+  border: 1px solid var(--line-strong);
   box-shadow:
-    0 18px 44px rgba(92, 99, 164, 0.18),
-    0 0 0 1px rgba(172, 176, 204, 0.34),
+    0 18px 44px rgba(29, 86, 138, 0.12),
+    0 0 0 1px rgba(123, 189, 232, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
 }
 
 .panel-muted {
-  background: linear-gradient(180deg, #f7ece3 0%, #efe0d4 100%);
-  border: 1px solid rgba(139, 127, 172, 0.42);
+  background: linear-gradient(180deg, rgba(237, 247, 252, 0.95) 0%, rgba(208, 230, 243, 0.95) 100%);
+  border: 1px solid var(--line-soft);
 }
 
 .panel-inset {
-  background: linear-gradient(180deg, #f5e9de 0%, #ecdccf 100%);
-  border: 1px solid rgba(139, 127, 172, 0.35);
+  background: linear-gradient(180deg, rgba(230, 243, 250, 0.94) 0%, rgba(197, 223, 237, 0.94) 100%);
+  border: 1px solid rgba(73, 118, 159, 0.22);
 }
 
 .section-enter {
@@ -125,17 +135,17 @@ body::after {
 
 .selection-glow {
   box-shadow:
-    0 0 0 1px rgba(var(--accent-rgb), 0.44),
-    0 0 36px rgba(var(--accent-rgb), 0.24),
-    0 20px 46px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(var(--magenta-rgb), 0.4),
+    0 0 32px rgba(var(--magenta-rgb), 0.18),
+    0 18px 42px rgba(29, 86, 138, 0.18);
 }
 
 .panel-hero {
   background:
-    radial-gradient(circle at top left, rgba(var(--accent-rgb), 0.2), transparent 50%),
-    radial-gradient(circle at top right, rgba(var(--violet-rgb), 0.2), transparent 48%),
-    radial-gradient(circle at 55% 30%, rgba(var(--magenta-rgb), 0.14), transparent 52%),
-    linear-gradient(180deg, #f8ece3 0%, #efdfd3 100%);
+    radial-gradient(circle at top left, rgba(var(--magenta-rgb), 0.18), transparent 50%),
+    radial-gradient(circle at top right, rgba(var(--teal-rgb), 0.16), transparent 48%),
+    radial-gradient(circle at 55% 30%, rgba(var(--violet-rgb), 0.12), transparent 52%),
+    linear-gradient(180deg, rgba(242, 249, 254, 0.97) 0%, rgba(214, 233, 245, 0.97) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
@@ -155,9 +165,44 @@ body::after {
 
 .ambient-glow {
   box-shadow:
-    0 0 0 1px rgba(172, 176, 204, 0.4),
-    0 0 24px rgba(var(--accent-rgb), 0.22),
-    0 12px 36px rgba(92, 99, 164, 0.2);
+    0 0 0 1px rgba(123, 189, 232, 0.24),
+    0 0 24px rgba(var(--magenta-rgb), 0.16),
+    0 12px 36px rgba(29, 86, 138, 0.16);
+}
+
+.soft-chip {
+  border: 1px solid rgba(73, 118, 159, 0.24);
+  background: rgba(247, 252, 255, 0.72);
+  color: var(--text-soft);
+}
+
+.deep-panel {
+  background: linear-gradient(180deg, rgba(123, 189, 232, 0.38) 0%, rgba(110, 162, 179, 0.54) 100%);
+  border: 1px solid rgba(73, 118, 159, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 16px 38px rgba(73, 118, 159, 0.16);
+  color: var(--text-primary);
+}
+
+.deep-panel-muted {
+  background: rgba(73, 118, 159, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.field-input {
+  border: 1px solid rgba(73, 118, 159, 0.28);
+  background: rgba(247, 252, 255, 0.88);
+  color: var(--text-primary);
+}
+
+.field-input::placeholder {
+  color: rgba(51, 89, 121, 0.76);
+}
+
+.field-input:focus {
+  border-color: rgba(10, 65, 116, 0.44);
+  background: rgba(252, 254, 255, 0.96);
 }
 
 .accent-orbit {
