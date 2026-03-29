@@ -46,6 +46,15 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = str(BACKEND_ROOT / "uploads")
     MAX_FILE_SIZE_MB: int = 20
 
+    # Object storage (S3-compatible, e.g. Vultr Object Storage)
+    OBJECT_STORAGE_ENABLED: bool = False
+    OBJECT_STORAGE_ENDPOINT_URL: str = ""  # e.g. https://ewr1.vultrobjects.com
+    OBJECT_STORAGE_REGION: str = "us-east-1"  # Vultr uses "us-east-1" for SigV4; keep unless you know otherwise
+    OBJECT_STORAGE_BUCKET: str = ""
+    OBJECT_STORAGE_ACCESS_KEY_ID: str = ""
+    OBJECT_STORAGE_SECRET_ACCESS_KEY: str = ""
+    OBJECT_STORAGE_PREFIX: str = "uploads"  # key prefix inside the bucket
+
     # Detection thresholds
     HASH_MATCH_THRESHOLD: int = 10  # hamming distance for 256-bit hash
     HASH_IDENTICAL_THRESHOLD: int = 5
