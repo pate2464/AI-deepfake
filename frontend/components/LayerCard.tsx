@@ -18,6 +18,8 @@ export default function LayerCard({
   geminiReasoning,
 }: LayerCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const reasoningFallback =
+    "The fallback vision model did not return usable free-text reasoning for this run. The output looked template-like, so it was suppressed.";
   const formatPercent = (value?: number) =>
     value === undefined ? "-" : `${(value * 100).toFixed(1)}%`;
   const roleLabel = {
@@ -181,10 +183,10 @@ export default function LayerCard({
           {result.layer === "gemini" && (geminiReasoning || result.details?.template_like_output) && (
             <div className="mt-4">
               <h4 className="text-xs font-semibold text-[var(--text-muted-strong)] uppercase tracking-wider mb-2">
-                Gemini AI Reasoning
+                Vision LLM Reasoning
               </h4>
               <div className="deep-panel rounded-lg p-3 text-sm leading-relaxed">
-                {geminiReasoning || "Local VLM did not return usable free-text reasoning for this image. The output looked like a copied template, so it was suppressed."}
+                {geminiReasoning || reasoningFallback}
               </div>
             </div>
           )}

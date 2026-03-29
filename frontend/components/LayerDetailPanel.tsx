@@ -80,6 +80,8 @@ export default function LayerDetailPanel({
   const detailEntries = Object.entries(result.details ?? {}).filter(([, value]) =>
     value !== null && value !== undefined && value !== ""
   );
+  const reasoningFallback =
+    "The fallback vision model did not return usable free-text reasoning for this run. The output looked template-like, so it was suppressed.";
   const roleLabel = ROLE_LABELS[result.score_role ?? "supporting-score"] ?? "Layer";
   const roleBadgeClass =
     ROLE_BADGES[result.score_role ?? "supporting-score"] ?? ROLE_BADGES["supporting-score"];
@@ -257,10 +259,10 @@ export default function LayerDetailPanel({
         {result.layer === "gemini" && (geminiReasoning || result.details?.template_like_output) ? (
           <section className="rounded-[24px] panel-inset px-4 py-4">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted-strong)]">
-              AI-generated interpretation
+              Vision LLM reasoning
             </div>
             <div className="deep-panel mt-3 rounded-[22px] px-4 py-4 text-sm leading-7 break-words [overflow-wrap:anywhere]">
-              {geminiReasoning || "Local VLM output resembled a copied template, so free-text reasoning was suppressed for this run."}
+              {geminiReasoning || reasoningFallback}
             </div>
           </section>
         ) : null}

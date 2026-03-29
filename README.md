@@ -81,7 +81,7 @@ pip install -r backend/requirements.txt
 
 # Configure environment
 cp backend/.env.example backend/.env
-# Edit backend/.env and add your GEMINI_API_KEY (optional — layer degrades gracefully)
+# Edit backend/.env and add your GEMINI_API_KEY (Gemini is the primary semantic VLM; local Moondream2 is the fallback)
 
 # Start server
 Set-Location .\backend
@@ -126,7 +126,7 @@ curl -X POST http://localhost:8000/api/v1/analyze \
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy 2.0 (async), aiosqlite
 - **Frontend**: Next.js 14, React 18, Tailwind CSS, TypeScript
 - **Detection**: Pillow, NumPy, SciPy, OpenCV, imagehash, c2pa-python
-- **AI**: Google Gemini 2.5 Flash (multimodal vision)
+- **AI**: Google Gemini 2.5 Flash (primary multimodal vision), local Moondream2 fallback
 - **Database**: SQLite (zero-config, single-file)
 
 ## Project Structure
@@ -147,7 +147,7 @@ AI-deepfake/
 │   │   │   ├── ai_model_detector.py # L4: FFT frequency
 │   │   │   ├── c2pa_detector.py   # L5: C2PA provenance
 │   │   │   ├── behavioral_detector.py # L6: Account behavior
-│   │   │   ├── gemini_detector.py # L7: Gemini vision AI
+│   │   │   ├── gemini_detector.py # L7: Gemini-first vision AI
 │   │   │   └── noise_detector.py  # L8: Noise/PRNU
 │   │   ├── engine/
 │   │   │   ├── pipeline.py        # Orchestrator (parallel execution)

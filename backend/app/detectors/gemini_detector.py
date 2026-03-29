@@ -1,8 +1,8 @@
 """Layer 7 — Vision-Language Model Semantic Analysis.
 
-Uses a local GPU-accelerated vision-language model (Moondream2, 1.86B params)
-for semantic forensic analysis.  Falls back to Gemini API if the local model
-is unavailable.
+Uses the Gemini API as the primary semantic forensic model. Falls back to a
+local GPU-accelerated vision-language model (Moondream2, 1.86B params) when
+Gemini is unavailable.
 
 This layer provides semantic-level reasoning that no pixel-level detector can
 match — identifying physically impossible objects, AI-typical style artifacts,
@@ -12,6 +12,7 @@ uncanny-valley textures, garbled text, and contextual inconsistencies.
 from __future__ import annotations
 
 import asyncio
+from difflib import get_close_matches
 import json
 import logging
 import re
@@ -71,7 +72,7 @@ FORENSIC_PROMPT = (
 # ── Model loading ───────────────────────────────────────
 
 def _load_vlm():
-    """Load the Moondream2 VLM (called once, eagerly at import time).
+    """Load the Moondream2 fallback VLM (called once, eagerly at import time).
 
     Uses init_empty_weights + direct-to-GPU safetensors loading to
     bypass Windows pagefile mmap limitations.  Must run before any
@@ -286,7 +287,7 @@ def _parse_vlm_response(text: str) -> dict[str, Any]:
     }
 
 
-# ── Gemini API fallback ────────────────────────────────
+# ── Gemini API primary path ────────────────────────────
 
 GEMINI_PROMPT = """You are an expert forensic image analyst. Analyze this image for signs of AI generation.
 
@@ -304,17 +305,72 @@ Return ONLY valid JSON:
 Score: 0.0 = authentic, 1.0 = highly suspicious."""
 
 
-async def _gemini_fallback(image_path: str) -> tuple[LayerResult, str | None]:
-    """Original Gemini API path — used only if local VLM is unavailable."""
+def _list_generate_content_models(genai_module: Any) -> list[str]:
+    """Return model IDs that support generateContent for the configured key."""
+    available_models: list[str] = []
+    for model in genai_module.list_models():
+        methods = getattr(model, "supported_generation_methods", []) or []
+        if "generateContent" in methods:
+            available_models.append(model.name)
+    return available_models
+
+
+def _suggest_models(requested_model: str, available_models: list[str]) -> list[str]:
+    """Return nearby model IDs to help diagnose configuration errors."""
+    requested_short = requested_model.removeprefix("models/")
+    suggestions = [
+        model_name
+        for model_name in available_models
+        if requested_short in model_name.removeprefix("models/")
+    ]
+    if suggestions:
+        return suggestions[:5]
+
+    stripped_to_full = {
+        model_name.removeprefix("models/"): model_name
+        for model_name in available_models
+    }
+    close_matches = get_close_matches(
+        requested_short,
+        list(stripped_to_full.keys()),
+        n=5,
+        cutoff=0.45,
+    )
+    return [stripped_to_full[name] for name in close_matches]
+
+
+def _build_missing_model_hint(genai_module: Any, requested_model: str) -> str | None:
+    """Return a useful error hint when the configured Gemini model is invalid."""
+    try:
+        available_models = _list_generate_content_models(genai_module)
+    except Exception as exc:
+        return f"Could not list available Gemini models: {type(exc).__name__}: {exc}"
+
+    suggestions = _suggest_models(requested_model, available_models)
+    if suggestions:
+        return (
+            f"Configured model '{requested_model}' is not available for generateContent. "
+            f"Closest visible models: {', '.join(suggestions)}"
+        )
+
+    if available_models:
+        preview = ", ".join(available_models[:8])
+        return (
+            f"Configured model '{requested_model}' is not available for generateContent. "
+            f"Visible models include: {preview}"
+        )
+
+    return f"Configured model '{requested_model}' is not available for generateContent."
+
+
+async def _run_gemini_api(image_path: str) -> tuple[LayerResult, str | None]:
+    """Run the primary Gemini API semantic analysis path."""
     flags: list[str] = []
     details: dict[str, Any] = {}
 
     api_key = settings.GEMINI_API_KEY
     if not api_key:
-        return LayerResult(
-            layer=LayerName.GEMINI, score=0.0, confidence=0.0,
-            flags=["No API key and local VLM unavailable — layer skipped"],
-        ), None
+        raise RuntimeError("Gemini API key is not configured")
 
     try:
         import google.generativeai as genai
@@ -354,6 +410,7 @@ async def _gemini_fallback(image_path: str) -> tuple[LayerResult, str | None]:
 
         parsed = json.loads(response_text)
         details["gemini_raw"] = parsed
+        details["model"] = settings.GEMINI_MODEL
 
         sub_scores = []
         for key in ("physical_plausibility", "ai_artifacts", "contextual_consistency",
@@ -392,12 +449,16 @@ async def _gemini_fallback(image_path: str) -> tuple[LayerResult, str | None]:
             confidence=round(gemini_confidence, 4), flags=flags, details=details,
         ), reasoning
 
-    except Exception as e:
-        return LayerResult(
-            layer=LayerName.GEMINI, score=0.0, confidence=0.0,
-            flags=[f"Gemini fallback also failed: {type(e).__name__}"],
-            error=str(e),
-        ), None
+    except Exception as exc:
+        hint = None
+        if type(exc).__name__ == "NotFound" or "not found" in str(exc).lower():
+            hint = _build_missing_model_hint(genai, settings.GEMINI_MODEL)
+            if hint:
+                logger.error("Gemini model lookup failed. %s", hint)
+
+        if hint:
+            raise RuntimeError(f"Gemini API failed: {type(exc).__name__}: {exc}. {hint}") from exc
+        raise RuntimeError(f"Gemini API failed: {type(exc).__name__}: {exc}") from exc
 
 
 # ── Public entry point ──────────────────────────────────
@@ -406,12 +467,23 @@ async def analyze(image_path: str) -> tuple[LayerResult, str | None]:
     """Run semantic forensic analysis.
 
     Strategy:
-      1. Try local VLM (Moondream2 on GPU) — fast, free, no API limits.
-      2. Fall back to Gemini API if the local model cannot load.
+      1. Try Gemini API first — primary semantic model when configured.
+      2. Fall back to local VLM (Moondream2 on GPU) if Gemini is unavailable.
 
     Returns ``(LayerResult, reasoning_text_or_None)``.
     """
-    # ── Attempt local VLM ───────────────────────────────
+    gemini_error: Exception | None = None
+    if settings.GEMINI_API_KEY:
+        try:
+            return await _run_gemini_api(image_path)
+        except Exception as exc:
+            gemini_error = exc
+            logger.warning("Gemini API failed (%s) — falling back to local VLM", exc)
+    else:
+        logger.info("Gemini API key not configured — using local VLM fallback")
+
+    # ── Attempt local VLM fallback ──────────────────────
+    local_vlm_error: Exception | None = None
     try:
         raw_text = await asyncio.to_thread(_run_local_inference, image_path)
         parsed = _parse_vlm_response(raw_text)
@@ -473,11 +545,30 @@ async def analyze(image_path: str) -> tuple[LayerResult, str | None]:
         ), reasoning
 
     except Exception as exc:
-        logger.warning("Local VLM failed (%s) — falling back to Gemini API", exc)
+        local_vlm_error = exc
+        logger.warning("Local VLM fallback failed (%s)", exc)
 
-    # ── Gemini API fallback ─────────────────────────────
-    return await _gemini_fallback(image_path)
+    flags: list[str] = []
+    error_parts: list[str] = []
+    if gemini_error is not None:
+        flags.append("Gemini primary path failed")
+        error_parts.append(str(gemini_error))
+    else:
+        flags.append("Gemini API key not configured")
+        error_parts.append("Gemini API key is not configured")
+
+    flags.append("Local VLM fallback failed")
+    error_parts.append(str(local_vlm_error) if local_vlm_error is not None else "Local VLM fallback failed")
+
+    return LayerResult(
+        layer=LayerName.GEMINI,
+        score=0.0,
+        confidence=0.0,
+        flags=flags,
+        error=" | ".join(error_parts),
+        details={"source": "unavailable"},
+    ), None
 
 
-# ── Eager-load the VLM at import time (before any request threads) ──
+# ── Eager-load the local fallback VLM before request concurrency starts ──
 _load_vlm()
