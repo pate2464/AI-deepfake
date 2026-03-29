@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  backend:
+    image: ${VULTR_CR_REPO:-ord.vultrcr.com/hackindy}/backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env.production
+    volumes:
+      - model_cache:/app/models
+      - uploads:/app/uploads
+    expose:
+      - "8000"
+
+  frontend:
+    image: ${VULTR_CR_REPO:-ord.vultrcr.com/hackindy}/frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  model_cache:
+  uploads:
