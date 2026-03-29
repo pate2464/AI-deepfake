@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Fraud Detector — 8-Layer Deep Analysis",
-  description: "Detect AI-generated fraudulent images with 8 detection layers",
+  title: "AI Fraud Detector — Split Review Workspace",
+  description: "Review source images and grouped 21-layer fraud analysis in a split-screen workspace.",
 };
 
 export default function RootLayout({

@@ -1,13 +1,20 @@
 "use client";
 
-import { riskColor, scoreToPercent } from "@/lib/utils";
+import { cn, riskColor, scoreToPercent } from "@/lib/utils";
 
 interface RiskGaugeProps {
   score: number;
   tier: "low" | "medium" | "high";
+  size?: number;
+  className?: string;
 }
 
-export default function RiskGauge({ score, tier }: RiskGaugeProps) {
+export default function RiskGauge({
+  score,
+  tier,
+  size = 160,
+  className,
+}: RiskGaugeProps) {
   const percent = scoreToPercent(score);
   const circumference = 2 * Math.PI * 45; // radius=45
   const offset = circumference - (score * circumference);
@@ -31,10 +38,9 @@ export default function RiskGauge({ score, tier }: RiskGaugeProps) {
   }[tier];
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative w-40 h-40">
+    <div className={cn("flex flex-col items-center gap-3", className)}>
+      <div className="relative" style={{ width: size, height: size }}>
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-          {/* Background circle */}
           <circle
             cx="50"
             cy="50"
@@ -43,7 +49,6 @@ export default function RiskGauge({ score, tier }: RiskGaugeProps) {
             stroke="#2a2a2a"
             strokeWidth="8"
           />
-          {/* Score circle */}
           <circle
             cx="50"
             cy="50"
@@ -71,7 +76,7 @@ export default function RiskGauge({ score, tier }: RiskGaugeProps) {
         <div className={`text-sm font-bold tracking-wider ${riskColor(tier)}`}>
           {tierLabel}
         </div>
-        <div className="text-xs text-[#a0a0a0] mt-1">
+        <div className="mt-1 text-xs text-[#a0a0a0]">
           Recommended: {tierAction}
         </div>
       </div>

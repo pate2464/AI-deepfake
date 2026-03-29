@@ -11,17 +11,38 @@
   --text-secondary: #a0a0a0;
 }
 
-body {
+html {
   background: var(--bg-primary);
-  color: var(--text-primary);
 }
 
-/* Custom scrollbar */
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.07), transparent 28%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.09), transparent 24%),
+    linear-gradient(180deg, #111111 0%, #0a0a0a 42%, #090909 100%);
+  color: var(--text-primary);
+  font-family: "IBM Plex Sans", "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(circle at top, black 12%, transparent 82%);
+  opacity: 0.18;
+  z-index: -1;
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
-/* Risk gauge animation */
 @keyframes gauge-fill {
   from { stroke-dashoffset: 283; }
 }
@@ -30,12 +51,42 @@ body {
   animation: gauge-fill 1.5s ease-out forwards;
 }
 
-/* Scanning animation */
-@keyframes scan-line {
-  0% { top: 0; }
-  100% { top: 100%; }
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.scan-line {
-  animation: scan-line 2s ease-in-out infinite;
+.panel-surface {
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.96), rgba(17, 17, 17, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+}
+
+.panel-muted {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-inset {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.24), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-enter {
+  animation: section-enter 0.45s ease-out both;
+}
+
+.selection-glow {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 18px 42px rgba(0, 0, 0, 0.22);
 }

@@ -1,24 +1,55 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { FileImage, ImagePlus, LoaderCircle, RefreshCcw } from "lucide-react";
 import { useDropzone } from "react-dropzone";
+import { cn } from "@/lib/utils";
+
+export interface SelectedFileMeta {
+  name: string;
+  type: string;
+  size: number;
+}
 
 interface ImageUploadProps {
   onFileSelect: (file: File) => void;
   isAnalyzing: boolean;
+  previewUrl: string | null;
+  selectedFile: SelectedFileMeta | null;
+}
+
+function formatFileSize(size: number) {
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getFileExtension(fileName: string) {
+  const parts = fileName.split(".");
+  return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : "FILE";
 }
 
 export default function ImageUpload({
   onFileSelect,
   isAnalyzing,
+  previewUrl,
+  selectedFile,
 }: ImageUploadProps) {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [canRenderPreview, setCanRenderPreview] = useState(Boolean(previewUrl));
+
+  useEffect(() => {
+    setCanRenderPreview(Boolean(previewUrl));
+  }, [previewUrl]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
-      if (!file) return;
-      setPreview(URL.createObjectURL(file));
+      if (!file) {
+        return;
+      }
+
       onFileSelect(file);
     },
     [onFileSelect]
@@ -26,59 +57,118 @@ export default function ImageUpload({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "image/*": [".jpeg", ".jpg", ".png", ".webp", ".heic", ".heif", ".tiff", ".tif", ".bmp", ".avif"] },
+    accept: {
+      "image/*": [
+        ".jpeg",
+        ".jpg",
+        ".png",
+        ".webp",
+        ".heic",
+        ".heif",
+        ".tiff",
+        ".tif",
+        ".bmp",
+        ".avif",
+      ],
+    },
     maxFiles: 1,
     disabled: isAnalyzing,
   });
 
+  const footerNote = selectedFile
+    ? `${getFileExtension(selectedFile.name)} · ${formatFileSize(selectedFile.size)}`
+    : "JPEG, PNG, WebP, HEIC, TIFF, AVIF, BMP up to 20MB";
+
   return (
-    <div className="w-full">
+    <div className="rounded-[30px] panel-surface p-4 md:p-5 xl:shrink-0">
       <div
         {...getRootProps()}
-        className={`
-          relative border-2 border-dashed rounded-2xl p-8
-          flex flex-col items-center justify-center min-h-[300px]
-          cursor-pointer transition-all duration-300
-          ${isDragActive ? "border-blue-500 bg-blue-500/5" : "border-[#2a2a2a] hover:border-[#444]"}
-          ${isAnalyzing ? "opacity-50 cursor-not-allowed" : ""}
-        `}
+        className={cn(
+          "group flex h-full min-h-[320px] cursor-pointer flex-col rounded-[26px] border border-dashed border-white/10 bg-black/10 p-4 transition duration-300 md:min-h-[360px]",
+          isDragActive && "border-white/25 bg-white/[0.04]",
+          !isAnalyzing && "hover:border-white/20 hover:bg-white/[0.03]",
+          isAnalyzing && "cursor-progress"
+        )}
       >
         <input {...getInputProps()} />
 
-        {preview ? (
-          <div className="relative">
-            <img
-              src={preview}
-              alt="Preview"
-              className="max-h-[250px] rounded-lg object-contain"
-            />
-            {isAnalyzing && (
-              <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative w-20 h-20">
-                    <div className="absolute inset-0 rounded-full border-4 border-blue-500/30" />
-                    <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin" />
-                  </div>
-                  <span className="text-sm text-blue-400 font-medium">
-                    Analyzing 8 layers...
-                  </span>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f7f7f]">
+              Source image
+            </div>
+            <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-white">
+              {selectedFile ? "Preview locked for review" : "Drop or browse a file"}
+            </h2>
+          </div>
+          <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-[#cbcbcb]">
+            {selectedFile ? "Replace" : "Upload"}
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.12))] p-4 md:min-h-[300px]">
+          {previewUrl && selectedFile ? (
+            canRenderPreview ? (
+              <img
+                src={previewUrl}
+                alt={selectedFile.name}
+                className="h-full max-h-[360px] w-full rounded-[20px] object-contain md:max-h-[420px]"
+                onError={() => setCanRenderPreview(false)}
+              />
+            ) : (
+              <div className="flex h-full w-full max-w-md flex-col items-center justify-center rounded-[22px] border border-white/10 bg-black/20 px-6 py-8 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.05] text-white">
+                  <FileImage className="h-8 w-8" />
+                </div>
+                <div className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-[#d0d0d0]">
+                  {getFileExtension(selectedFile.name)} preview unavailable
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#a5a5a5]">
+                  This browser accepted the file but could not render a local preview. Analysis still works for HEIC and HEIF uploads.
+                </p>
+                <div className="mt-5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-[#d8d8d8]">
+                  {selectedFile.name}
                 </div>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-4 text-[#a0a0a0]">
-            <div className="text-5xl">🔍</div>
-            <div className="text-center">
-              <p className="text-lg font-medium text-[#ededed]">
-                {isDragActive ? "Drop image here" : "Drop an image to analyze"}
+            )
+          ) : (
+            <div className="flex max-w-sm flex-col items-center text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-[26px] border border-white/10 bg-white/[0.04] text-white transition duration-300 group-hover:scale-[1.02] group-hover:bg-white/[0.06]">
+                <ImagePlus className="h-9 w-9" />
+              </div>
+              <p className="mt-6 text-lg font-semibold tracking-[-0.03em] text-white">
+                {isDragActive ? "Release to analyze" : "Drop an image to analyze"}
               </p>
-              <p className="text-sm mt-1">
-                or click to browse — JPEG, PNG, WebP, HEIC, TIFF up to 20MB
+              <p className="mt-3 text-sm leading-6 text-[#a0a0a0]">
+                Keep the source frame visible during review. HEIC and HEIF uploads are accepted even when a browser cannot preview them.
               </p>
             </div>
-          </div>
-        )}
+          )}
+
+          {isAnalyzing && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="flex flex-col items-center gap-3 rounded-[24px] border border-white/10 bg-black/30 px-6 py-5 text-center">
+                <LoaderCircle className="h-8 w-8 animate-spin text-white" />
+                <div>
+                  <div className="text-sm font-semibold text-white">Running evidence stack</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[#b2b2b2]">
+                    21-layer grouped analysis
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#9a9a9a]">
+          <span className="min-w-0 flex-1 break-words">{footerNote}</span>
+          {selectedFile ? (
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[#d8d8d8]">
+              <RefreshCcw className="h-3.5 w-3.5" />
+              Click or drop to replace
+            </span>
+          ) : null}
+        </div>
       </div>
     </div>
   );
