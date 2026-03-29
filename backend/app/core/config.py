@@ -40,7 +40,7 @@ class Settings(BaseSettings):
 
     # Gemini
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "models/gemini-3.1-pro-preview"
 
     # Upload
     UPLOAD_DIR: str = str(BACKEND_ROOT / "uploads")
