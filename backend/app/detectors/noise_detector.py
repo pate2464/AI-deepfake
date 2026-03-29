@@ -16,7 +16,7 @@ from typing import Any
 import numpy as np
 import pywt
 from PIL import Image
-from scipy import ndimage, stats
+from scipy import stats
 
 from app.core.models import LayerName, LayerResult
 

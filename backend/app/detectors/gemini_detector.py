@@ -349,7 +349,7 @@ async def _gemini_fallback(image_path: str) -> tuple[LayerResult, str | None]:
         response_text = response.text.strip()
         if response_text.startswith("```"):
             lines = response_text.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [line for line in lines if not line.strip().startswith("```")]
             response_text = "\n".join(lines)
 
         parsed = json.loads(response_text)

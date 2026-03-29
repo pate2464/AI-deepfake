@@ -18,7 +18,6 @@ and any future generator that uses upsampling.
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import cv2
 import numpy as np

@@ -19,7 +19,6 @@ Reference:
 
 from __future__ import annotations
 
-import io
 import logging
 import struct
 from typing import Any
@@ -293,7 +292,7 @@ def analyze(image_path: str) -> LayerResult:
             flags.append(f"Moderate Benford deviation (χ²={benford_chi2:.4f})")
         else:
             score -= 0.05
-            flags.append(f"DCT first digits follow Benford's Law — natural image")
+            flags.append("DCT first digits follow Benford's Law — natural image")
 
         # Double compression: high comb score = double JPEG
         if comb_score > 0.5:

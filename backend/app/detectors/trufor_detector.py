@@ -162,10 +162,9 @@ def analyze(image_path: str) -> tuple[LayerResult, str | None]:
     loc_map = F.softmax(pred, dim=0)[1].cpu().numpy()
 
     # conf: [1, 1, H, W] → sigmoid → confidence map
-    conf_map = None
     if conf is not None:
         conf = torch.squeeze(conf, 0)
-        conf_map = torch.sigmoid(conf)[0].cpu().numpy()
+        torch.sigmoid(conf)[0].cpu().numpy()
 
     # det: scalar → sigmoid → detection score (0=authentic, 1=manipulated)
     det_score = 0.5

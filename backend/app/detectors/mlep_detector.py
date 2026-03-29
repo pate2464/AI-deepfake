@@ -15,7 +15,6 @@ Model-agnostic, training-free feature extraction — tested on 32 generators.
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import cv2
 import numpy as np

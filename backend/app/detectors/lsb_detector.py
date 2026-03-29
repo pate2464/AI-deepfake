@@ -203,7 +203,7 @@ def analyze(image_path: str) -> LayerResult:
             flags.append(f"Marginal LSB uniformity deviation (p={avg_chi2_p:.4f})")
         else:
             score -= 0.05
-            flags.append(f"LSB distribution is uniform — consistent with camera noise")
+            flags.append("LSB distribution is uniform — consistent with camera noise")
 
         # Spatial correlation: camera ≈ 0.00-0.02, AI > 0.05
         if avg_spatial_corr > 0.10:

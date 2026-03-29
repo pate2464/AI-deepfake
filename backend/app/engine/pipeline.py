@@ -13,9 +13,6 @@ import time
 from typing import Any
 
 from PIL import Image
-
-logger = logging.getLogger(__name__)
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.layer_catalog import get_layer_metadata
@@ -50,6 +47,8 @@ from app.detectors import (
     watermark_detector,
 )
 from app.engine.scoring import compute_risk_score
+
+logger = logging.getLogger(__name__)
 
 MAX_PREPROCESS_DIM = 2048  # Resize large images once to avoid memory pressure
 

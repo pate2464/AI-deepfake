@@ -18,7 +18,7 @@ import torch.nn as nn
 from PIL import Image
 
 from app.core.models import LayerName, LayerResult
-from app.core.model_manager import get_device, get_cached, set_cached, model_path, is_downloaded
+from app.core.model_manager import get_device, get_cached, set_cached, model_path
 
 logger = logging.getLogger(__name__)
 

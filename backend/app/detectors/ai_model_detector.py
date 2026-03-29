@@ -27,7 +27,7 @@ def _compute_fft_features(img_array: np.ndarray) -> dict[str, float]:
     magnitude = np.abs(f_shift)
 
     # Log magnitude spectrum (avoid log(0))
-    log_mag = np.log1p(magnitude)
+    np.log1p(magnitude)
 
     h, w = img_array.shape
     cy, cx = h // 2, w // 2

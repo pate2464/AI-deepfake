@@ -130,7 +130,6 @@ def _score_from_spectral(features: dict[str, float]) -> tuple[float, list[str]]:
     noise = features["noise_std"]
     lap_var = features["laplacian_var"]
     dct_high = features["dct_high_energy"]
-    entropy = features["spectral_entropy"]
 
     # AI images have less high-frequency content
     if high_freq < 0.20:

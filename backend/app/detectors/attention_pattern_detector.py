@@ -209,7 +209,6 @@ def _spatial_frequency_modulation(gray: np.ndarray) -> float:
     and measure how it varies spatially.
     """
     h, w = gray.shape
-    img = gray.astype(np.float64)
 
     # Compute local high-frequency energy using Laplacian
     lap = cv2.Laplacian(gray, cv2.CV_64F)
