@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """Reset the Vultr-hosted production database and object storage.
 
-Run this *inside* the backend container on the VPS:
+On the VPS (from the app directory, e.g. /opt/ai-deepfake):
 
-    docker exec ai-deepfake-backend-1 python /app/reset_prod.py          # DB only
-    docker exec ai-deepfake-backend-1 python /app/reset_prod.py --all    # DB + bucket
+    docker compose -f docker-compose.prod.yml exec backend python /app/reset_prod.py
+    docker compose -f docker-compose.prod.yml exec backend python /app/reset_prod.py --all
 
-Or locally (with backend/.env.production values sourced):
+(`--all` also deletes objects under OBJECT_STORAGE_PREFIX in the Vultr bucket.)
 
-    DATABASE_URL=... python reset_prod.py --all
+Or locally from `backend/` with production env vars exported (point `source` at your
+`.env.production` file, often repo root or `/opt/ai-deepfake/` on the VPS):
+
+    set -a && source /path/to/.env.production && set +a && cd backend && python reset_prod.py --all
+
+Requires PostgreSQL (uses TRUNCATE … CASCADE). Not for SQLite.
 """
 
 import asyncio
@@ -30,6 +35,10 @@ async def reset_database():
         except Exception:
             print("  ERROR: DATABASE_URL not set and cannot import app config.")
             return False
+
+    if url.startswith("sqlite"):
+        print("  ERROR: This script is for PostgreSQL only (Vultr managed DB).")
+        return False
 
     engine = create_async_engine(url)
     async with engine.begin() as conn:

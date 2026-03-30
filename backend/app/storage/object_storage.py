@@ -6,12 +6,17 @@ import asyncio
 import io
 import mimetypes
 
-import boto3
-
 from app.core.config import settings
 
 
 def _client():
+    try:
+        import boto3
+    except ImportError as exc:  # pragma: no cover - env bootstrap
+        raise RuntimeError(
+            "boto3 is required for object storage. Install with: pip install boto3"
+        ) from exc
+
     return boto3.client(
         "s3",
         endpoint_url=settings.OBJECT_STORAGE_ENDPOINT_URL or None,
